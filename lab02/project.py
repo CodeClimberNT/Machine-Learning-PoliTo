@@ -19,20 +19,20 @@ def load_file_into_np(file_path: str, features_cols: tuple) -> list[ndarray[Any,
 def plot(x, y, label_name: tuple[str], title: str) -> None:
     plt.figure()
 
-    rows: int = x.shape[1] // 2
+    rows: int = x.shape[1]
     cols: int = x.shape[1]
 
     fig, axs = plt.subplots(rows, cols, figsize=(cols*7, rows*7))
-    fig.suptitle(title)
+    # fig.suptitle(title)
 
-    for i in range(rows):
-        for j in range(cols):
+    for i in range(x.shape[1]):
+        for j in range(x.shape[1]):
             for label in np.unique(y):
                 if i != j:
-                    axs[j].scatter(x[y == label, i], x[y == label, j], label=label_name[label], alpha=0.5)
+                    axs[i, j].scatter(x[y == label, i], x[y == label, j], label=label_name[label], alpha=0.5)
                 else:
-                    axs[j].hist(x[y == label, i], density=True, label=label_name[label], alpha=0.5)
-                axs[j].legend(title='Labels')
+                    axs[i, j].hist(x[y == label, i], density=True, label=label_name[label], alpha=0.5)
+                axs[i, j].legend(title='Labels')
 
     fig.show()
 
