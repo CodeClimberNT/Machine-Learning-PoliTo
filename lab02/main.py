@@ -39,7 +39,7 @@ def m_row(x: np.ndarray) -> np.ndarray:
 
 def main() -> None:
     # Specify the file path
-    file_path: str = "./iris.csv"
+    file_path: str = "../datasets/iris.csv"
 
     # Load features and label
     [x, y] = load(file_path, (0, 1, 2, 3))
