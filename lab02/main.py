@@ -2,20 +2,20 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-def load(file_path: str, features_cols: list) -> list[np.ndarray, np.ndarray]:
+def load(file_path: str, features_cols: tuple) -> tuple[np.ndarray, np.ndarray]:
     # Load the array from the text file
     x = np.loadtxt(file_path, delimiter=",", usecols=features_cols, dtype=float)
     y = np.loadtxt(file_path, delimiter=",", usecols=features_cols[-1] + 1, dtype=str)
     # Return the array
-    return [x, y]
+    return x, y
 
 
-def plot(x, y, features):
+def plot(x: np.ndarray, y: np.ndarray, features: list[str]) -> None:
     for i in range(x.shape[1]):
         for j in range(x.shape[1]):
             plt.figure()
             for label in np.unique(y):
-                if ('-' in label):
+                if '-' in label:
                     classes = label.split('-')[1].capitalize()  # capitalize the first character
                 else:
                     classes = label.capitalize()
@@ -29,17 +29,17 @@ def plot(x, y, features):
             plt.show()
 
 
-def mcol(x):
+def m_col(x: np.ndarray) -> np.ndarray:
     return x.reshape(x.shape[0], 1)
 
 
-def mrow(x):
+def m_row(x: np.ndarray) -> np.ndarray:
     return x.reshape(1, x.shape[0])
 
 
-def main():
+def main() -> None:
     # Specify the file path
-    file_path = "./iris.csv"
+    file_path: str = "./iris.csv"
 
     # Load features and label
     [x, y] = load(file_path, (0, 1, 2, 3))
