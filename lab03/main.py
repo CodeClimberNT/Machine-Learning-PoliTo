@@ -1,6 +1,6 @@
 import numpy as np
 
-from ml.utils import *
+from helpers.helper import *
 from matplotlib import pyplot as plt
 
 def check_solution() -> None:
