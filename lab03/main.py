@@ -1,7 +1,8 @@
 import numpy as np
 
-from helpers.helper import *
+from helpers.helper import Helper
 from matplotlib import pyplot as plt
+
 
 def check_solution() -> None:
     raise NotImplementedError
@@ -41,8 +42,13 @@ def plot_pca(x: np.ndarray, y: np.ndarray, features: list[str]) -> None:
 
 
 def main() -> None:
-    [x, y] = load_file("../datasets/iris.csv", (0, 1, 2, 3))
-    features_name: str = ('Sepal length', 'Sepal width', 'Petal length', 'Petal width')
+    [x, y] = Helper.load_file("../datasets/iris.csv", (0, 1, 2, 3))
+    features_name: tuple = (
+        "Sepal length",
+        "Sepal width",
+        "Petal length",
+        "Petal width",
+    )
     print("matrix shape", x.shape)
 
     m2 = compute_projection_matrix(x, 2)
@@ -50,5 +56,5 @@ def main() -> None:
     plot_pca(m2, y, features_name)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
