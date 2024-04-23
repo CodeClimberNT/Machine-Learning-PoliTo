@@ -3,23 +3,22 @@ import numpy as np
 # from matplotlib import pyplot as plt
 
 
-class Helper:
-    @staticmethod
-    def load_file(
-        file_path: str, features_cols: tuple
-    ) -> tuple[np.ndarray, np.ndarray]:
-        # Load the array from the text file
-        x = np.loadtxt(file_path, delimiter=",", usecols=features_cols, dtype=float)
-        y = np.loadtxt(
-            file_path, delimiter=",", usecols=features_cols[-1] + 1, dtype=str
-        )
-        # Return the array
-        return x, y
+def load_file(file_path: str) -> tuple[np.ndarray, np.ndarray]:
+    # Load the array from the text file
+    data = np.loadtxt(file_path, delimiter=",", dtype=str)
 
-    @staticmethod
-    def v_col(x):
-        return x.reshape((x.size, 1))
+    # Extract features (first 4 columns)
+    x = data[:, :-1].astype(float)
 
-    @staticmethod
-    def v_row(x):
-        return x.reshape((1, x.size))
+    # Extract labels (last column)
+    y = data[:, -1]
+
+    return x, y
+
+
+def v_col(x):
+    return x.reshape((x.size, 1))
+
+
+def v_row(x):
+    return x.reshape((1, x.size))
