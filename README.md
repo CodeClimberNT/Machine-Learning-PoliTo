@@ -5,6 +5,8 @@ during my attendance at "Politecnico di Torino" in the academic year `2023-2024`
 # Usage
 Using pip install the required package from `requirements.txt` to run all the code (does not include notebook package)
 
+`pip install -r requirements. txt`
+
 # Note
 Since I later discovered the course will be use `.py` file instead of notebook for evaluation I transitioned to them and didn't correct
 for refactor of code or similar. 
