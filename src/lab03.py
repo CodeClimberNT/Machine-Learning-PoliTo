@@ -1,5 +1,5 @@
 import numpy as np
-from helper import Data as d
+from helper import DataHelper as d
 
 
 import LinearDiscriminantAnalysis as LDA

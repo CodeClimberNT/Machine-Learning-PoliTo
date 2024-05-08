@@ -1,7 +1,8 @@
 import numpy as np
+import pandas as pd
 
 
-class Data:
+class DataHelper:
     @staticmethod
     def load_iris():
         import sklearn.datasets
@@ -16,20 +17,25 @@ class Data:
         file_path: str,
         delimiter: str = ",",
         features_type: type = float,
+        labels_type: type = float,
         return_labels_in_data_matrix: bool = False,
     ) -> tuple[np.ndarray, np.ndarray]:
 
+        # data = pd.read_csv(file_path, sep=delimiter, header=None).to_numpy(dtype=features_type)
+
         # Load the array from the text file and convert all but last column to float
-        data = np.loadtxt(file_path, delimiter=delimiter, dtype=str)
+        data = np.loadtxt(file_path, delimiter=delimiter, dtype=features_type)
+        
+        # return np.rot90(data)
 
         if return_labels_in_data_matrix:
             x = data
         else:
             # Extract features (all but last column)
-            x = data[:, :-1].astype(features_type)
+            x = data[:, :-1]
 
         # Extract labels (last column)
-        y = data[:, -1]
+        y = data[:, -1].astype(labels_type)
 
         return x, y
 
