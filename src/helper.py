@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Data:
     @staticmethod
     def load_iris():
@@ -31,6 +32,25 @@ class Data:
         y = data[:, -1]
 
         return x, y
+
+    @staticmethod
+    def split_db_2to1(D: np.ndarray, L: np.ndarray, seed=0) -> tuple:
+
+        nTrain = int(D.shape[1] * 2.0 / 3.0)
+        np.random.seed(seed)
+
+        idx = np.random.permutation(D.shape[1])
+
+        idxTrain = idx[0:nTrain]
+        idxTest = idx[nTrain:]
+
+        DTrain = D[:, idxTrain]
+        DVal = D[:, idxTest]
+
+        LTrain = L[idxTrain]
+        LVal = L[idxTest]
+
+        return (DTrain, LTrain), (DVal, LVal)
 
 
 class MathHelper:

@@ -3,45 +3,38 @@ import numpy as np
 from helper import MathHelper as mh
 
 
-class pca:
-    def __init__(self, m: int = 2):
-        self._set_dimensions(m)
+class PCA:
+    def __init__(self, *, m: int = 2):
+        self.set_dimensions(m)
 
-    def _cv_matrix(self, matrix: np.ndarray) -> np.ndarray:
-        centered_matrix: np.ndarray = self._center_matrix(matrix)
-
-        return np.dot(centered_matrix, centered_matrix.T) / float(matrix.shape[0])
-
-    def _center_matrix(self, matrix: np.ndarray) -> np.ndarray:
-
-        mu = matrix.mean(1).reshape(-1, 1)
-
-        return matrix - mu
-
-    def projection_matrix(self, D: np.ndarray, m: int) -> np.ndarray:
-
-        C = self._cv_matrix(D)
-        U, _, _ = np.linalg.svd(C)
-
-        P = U[:, 0:m]
-
-        return np.dot(P.T, D)
-
-    def _set_dimensions(self, m: int) -> None:
+    def set_dimensions(self, m: int) -> None:
         self.m = m
 
-    def set_train_data(self, DTrain: np.ndarray, *, m: int) -> np.ndarray:
-        self.DTrain = DTrain
+    def set_train_data(self, D: np.ndarray, L: np.ndarray) -> np.ndarray:
+        self.D = D
+        self.L = L
 
-        self.mu = mh.v_col(np.mean(DTrain, axis=1))
+        self.mu = mh.v_col(np.mean(D, axis=1))
+        self.num_classes = len(np.unique(L))
 
-    def fit(self):
-        C = np.dot((self.DTrain - self.mu), (self.DTrain - self.mu).T) / float(self.DTrain.shape[1])
-        U, _, _ = np.linalg.svd(C)
-        P = U[:, 0:self.m]
+    def fit(self) -> None:
+        self.get_m_components()
 
-        return P
+    def get_m_components(self) -> np.ndarray:
+        C = mh.cv_matrix(self.D)
+        self.U, _, _ = np.linalg.svd(C)
+        self.P = self.U[:, 0 : self.m]
 
-    def apply_pca(P: np.ndarray, D: np.ndarray) -> np.ndarray:
+        return self.P
 
-        return np.dot(P.T, D)
+    def get_projected_matrix(self) -> np.ndarray:
+        if self.D is None:
+            raise ValueError("Train data is not set")
+
+        if self.P is None:
+            self.get_m_components()
+
+        return np.dot(self.P.T, self.D)
+
+    def predict(self, D: np.ndarray) -> np.ndarray:
+        return np.dot(self.P.T, D)

@@ -10,14 +10,14 @@ class LDA:
         self.set_dimensions(m)
 
     def set_solver(self, solver: str):
-        valid_solver = self._get_valid_solver()
+        valid_solver = self.get_valid_solver()
         if solver not in valid_solver:
             raise ValueError(f"Invalid solver. Choose one from: {valid_solver}")
         else:
             self.solver = solver
         return self
 
-    def _get_valid_solver(self) -> tuple[str]:
+    def get_valid_solver(self) -> tuple[str]:
         return ("svd", "eigh")
 
     def set_dimensions(self, m: int) -> None:
@@ -36,6 +36,7 @@ class LDA:
 
     def fit(self):
         self.solve()
+        self.get_projected_matrix()
 
     def _compute_SB(self):
         Sb = 0
@@ -82,9 +83,33 @@ class LDA:
         return self.W
 
     def get_projected_matrix(self):
-        if self.W is None:
+        if hasattr(self, "W") is False:
             raise ValueError("W is not set. Run fit method first")
-        return self.W.T @ self.DTrain
 
-    def predict(self, Dtest: np.ndarray):
-        raise NotImplementedError
+        self.projected_matrix: np.ndarray = self.W.T @ self.DTrain
+        return self.projected_matrix
+
+    def calculate_threshold(self) -> float:
+        if hasattr(self, "projected_matrix") is False:
+            raise ValueError("Projected matrix is not set. Run fit method first")
+        
+        self.threshold: float = (
+            self.projected_matrix[0, self.LTrain == 1].mean()
+            + self.projected_matrix[0, self.LTrain == 2].mean()
+        ) / 2.0
+        return self.threshold
+
+    def predict(self, DVal: np.ndarray) -> np.ndarray:
+        if hasattr(self, "W") is False:
+            raise ValueError("W is not set. Run fit method first")
+        if hasattr(self, "threshold") is False:
+            self.calculate_threshold()
+
+        projected_values = self.W.T @ DVal
+        print(projected_values.shape)
+        print(self.threshold)
+        predicted_values = np.zeros(shape=projected_values.shape, dtype=np.int32)
+        predicted_values[projected_values >= self.threshold] = 2
+        predicted_values[projected_values < self.threshold] = 1
+        return predicted_values
+
