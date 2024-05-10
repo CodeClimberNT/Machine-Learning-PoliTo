@@ -29,8 +29,45 @@ class Visualizer:
 
         for label, color in zip(unique_labels, colors):
             # remove labels columns after filtering
-            plt.hist(data[0, labels == label], color=color, density=True, bins=10 ,label=labels_name[label], alpha=0.5)
+            if labels_name:
+                try:
 
+                    plt.hist(
+                        data[0, labels == label],
+                        color=color,
+                        density=True,
+                        bins=10,
+                        label=labels_name[label],
+                        alpha=0.5,
+                    )
+                # TODO temporary fix, need to better undestand the change in the data shape 
+                except IndexError:
+                    plt.hist(
+                        data[labels == label],
+                        color=color,
+                        density=True,
+                        bins=10,
+                        label=labels_name[label],
+                        alpha=0.5,
+                    )
+            else:
+                plt.hist(
+                    data[0, labels == label],
+                    color=color,
+                    density=True,
+                    bins=10,
+                    label=label,
+                    alpha=0.5,
+                )
+
+        # Visualizer.__configure_plt(
+        #     plt,
+        #     title=title,
+        #     x_label=x_label,
+        #     y_label=y_label,
+        #     grid=grid,
+        #     invert_x_axis=invert_x_axis,
+        # )
         plt.title(title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -87,3 +124,27 @@ class Visualizer:
             plt.gca().invert_xaxis()
 
         plt.show()
+
+    def __configure_plt(
+        self,
+        plt,
+        *,
+        title: str,
+        x_label: str,
+        y_label: str,
+        grid: bool,
+        invert_y_axis: bool,
+        invert_x_axis: bool,
+    ):
+
+        plt.title(title)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.legend()
+        plt.grid(grid)
+        if invert_y_axis:
+            plt.gca().invert_yaxis()
+        if invert_x_axis:
+            plt.gca().invert_xaxis()
+
+        return plt

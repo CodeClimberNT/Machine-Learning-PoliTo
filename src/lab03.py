@@ -2,9 +2,9 @@ import numpy as np
 from helper import DataHelper as d
 
 
-import LinearDiscriminantAnalysis as LDA
-import PrincipalComponentAnalysis as PCA
-import Visualizer as vis
+from LinearDiscriminantAnalysis import LDA
+from PrincipalComponentAnalysis import PCA
+from Visualizer import Visualizer as vis
 
 
 # CLASSIFICATION
@@ -20,11 +20,11 @@ def classification_no_preprocess() -> None:
 
     (DTrain, LTrain), (DVal, LVal) = d.split_db_2to1(D, L)
 
-    lda = LDA.LDA(solver="svd", m=1)
+    lda = LDA(solver="svd", m=1)
     lda.set_train_data(DTrain, LTrain)
     lda.fit()
 
-    PVal = lda.predict(DVal)
+    PVal = lda.predict(DVal, LVal=LVal, show_error_rate=True)
 
     print("Labels:     ", LVal)
 
@@ -46,56 +46,22 @@ def classification() -> None:
     # Val: validation
     (DTrain, LTrain), (DVal, LVal) = d.split_db_2to1(D, L)
 
-    pca = PCA.PCA(m=2)
-    pca.set_train_data(DTrain, LTrain)
-    pca.fit()
+    pca = PCA(m=2)
+    pca.fit(DTrain, LTrain)
 
-    # UPCA = compute_pca(DTR, m=2)
-
-    # DTR_pca = apply_pca(UPCA, DTR)
 
     DVal_pca = pca.predict(DVal)
 
     DTrain_pca = pca.get_projected_matrix()
 
-    lda = LDA.LDA(solver="svd", m=1)
-    lda.set_train_data(DTrain_pca, LTrain)
-    lda.fit()
+    lda = LDA(solver="svd", m=1)
+    lda.fit(DTrain_pca, LTrain)
 
-    PVal = lda.predict(DVal_pca)
-    # DVAL_pca = apply_pca(UPCA, DVAL)
+    PVal = lda.predict(DVal_pca, LVal=LVal, show_error_rate=True)
 
-    # ULDA = lda_joint_diagonalization(DTR_pca, LTR, m=1)
-
-    # DTR_lda = apply_lda(ULDA, DTR_pca)
-
-    # if DTR_lda[0, LTR == 1].mean() > DTR_lda[0, LTR == 2].mean():
-
-    #     ULDA = -ULDA
-
-    #     DTR_lda = apply_lda(ULDA, DTR_pca)
-
-    # DVAL_lda = apply_lda(ULDA, DVAL_pca)
-
-    # threshold = (DTR_lda[0, LTrain == 1].mean() + DTR_lda[0, LTrain == 2].mean()) / 2.0
-
-    # PVAL = np.zeros(shape=LVal.shape, dtype=np.int32)
-
-    # PVAL[DVAL_lda[0] >= threshold] = 2
-
-    # PVAL[DVAL_lda[0] < threshold] = 1
-
-    print("Labels:     ", LVal)
-
-    print("Predictions:", PVal)
-    print(
-        "Number of errors:", (PVal != LVal).sum(), "(out of %d samples)" % (LVal.size)
-    )
-
-    print("Error rate: %.1f%%" % ((PVal != LVal).sum() / float(LVal.size) * 100))
 
     pca_matrix = np.vstack((DTrain_pca, LTrain))
-    vis.Visualizer.plot_scatter_matrix(
+    vis.plot_scatter_matrix(
         pca_matrix,
         LTrain,
         labels_name={1: "Versicolor", 2: "Virginica"},
@@ -112,7 +78,7 @@ def classification() -> None:
 
     lda_predict = np.vstack((DVal_pca, PVal))
 
-    vis.Visualizer.plot_hist(
+    vis.plot_hist(
         lda_train,
         LTrain,
         labels_name={1: "Versicolor", 2: "Virginica"},
@@ -123,7 +89,7 @@ def classification() -> None:
         invert_x_axis=True,
     )
 
-    vis.Visualizer.plot_hist(
+    vis.plot_hist(
         lda_predict,
         LVal,
         labels_name={1: "Versicolor", 2: "Virginica"},
@@ -134,27 +100,16 @@ def classification() -> None:
         invert_x_axis=True,
     )
 
-    # lda_matrix = np.vstack((lda_matrix, LTrain))
-
-    # vis.Visualizer.plot_hist(
-    #     lda_matrix,
-    #     LTrain,
-    #     labels_name={1: "Versicolor", 2: "Virginica"},
-    #     title="LDA Projection of Iris Dataset hist",
-    #     x_label="LDA Projection",
-    #     y_label="Frequency",
-    #     invert_x_axis=True,
-    # )
 
 
 def test_lda():
     D, L = d.load_iris()
-    lda = LDA.LDA(solver="svd", m=2)
+    lda = LDA(solver="svd", m=2)
     lda.set_train_data(D, L)
     lda.fit()
     y = lda.get_projected_matrix()
     print(y)
-    vis.Visualizer.plot_scatter_matrix(
+    vis.plot_scatter_matrix(
         y,
         L,
         labels_name={0: "Setosa", 1: "Versicolor", 2: "Virginica"},
@@ -168,7 +123,7 @@ def test_lda():
     lda.set_dimensions(1)
     lda.fit()
     y = lda.get_projected_matrix()
-    vis.Visualizer.plot_hist(
+    vis.plot_hist(
         y,
         L,
         labels_name={0: "Setosa", 1: "Versicolor", 2: "Virginica"},
@@ -181,12 +136,12 @@ def test_lda():
 
 def test_pca():
     D, L = d.load_iris()
-    pca = PCA.PCA(m=2)
+    pca = PCA(m=2)
     pca.set_train_data(D, L)
     pca.fit()
     y = pca.get_projected_matrix()
 
-    vis.Visualizer.plot_scatter_matrix(
+    vis.plot_scatter_matrix(
         y,
         L,
         labels_name={0: "Setosa", 1: "Versicolor", 2: "Virginica"},
@@ -203,7 +158,7 @@ def test_pca():
     print(y)
     # apply label to the last column
     y = np.vstack((y, L))
-    vis.Visualizer.plot_hist(
+    vis.plot_hist(
         y,
         L,
         labels_name={0: "Setosa", 1: "Versicolor", 2: "Virginica"},

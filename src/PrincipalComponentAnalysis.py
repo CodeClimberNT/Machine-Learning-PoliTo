@@ -17,7 +17,8 @@ class PCA:
         self.mu = mh.v_col(np.mean(D, axis=1))
         self.num_classes = len(np.unique(L))
 
-    def fit(self) -> None:
+    def fit(self, x, y) -> None:
+        self.set_train_data(x, y)
         self.get_m_components()
 
     def get_m_components(self) -> np.ndarray:
@@ -26,6 +27,9 @@ class PCA:
         self.P = self.U[:, 0 : self.m]
 
         return self.P
+
+    def take_n_components(self, n: int) -> np.ndarray:
+        return self.U[:, n]
 
     def get_projected_matrix(self) -> np.ndarray:
         if self.D is None:
@@ -38,3 +42,8 @@ class PCA:
 
     def predict(self, D: np.ndarray) -> np.ndarray:
         return np.dot(self.P.T, D)
+
+    def predict_custom_dir(self, *, U: np.ndarray = None, D: np.ndarray = None) -> np.ndarray:
+        if U is None or D is None:
+            raise ValueError("Direction or Data not set")
+        return np.dot(U.T, D)

@@ -31,12 +31,15 @@ class LDA:
         self.DTrain = DTrain
         self.LTrain = LTrain
         self.mu = mh.v_col(np.mean(DTrain, axis=1))
-
+        self.labels = list(np.unique(LTrain))
+        # print(self.labels)
         self.num_classes = len(np.unique(LTrain))
 
-    def fit(self):
+    def fit(self, x, y):
+        self.set_train_data(x, y)
         self.solve()
         self.get_projected_matrix()
+        self.calculate_threshold()
 
     def _compute_SB(self):
         Sb = 0
@@ -65,21 +68,21 @@ class LDA:
 
     def solve_svd(self):
         Sw = self._compute_SW()
-        U, s, _ = np.linalg.svd(Sw)
-        P1 = np.dot(U * mh.v_row(1.0 / (s**0.5)), U.T)
+        U1, s, _ = np.linalg.svd(Sw)
+        P1 = np.dot(U1 * mh.v_row(1.0 / (s**0.5)), U1.T)
 
         Sb = self._compute_SB()
         Sbt = np.dot(P1, np.dot(Sb, P1.T))
-        U2, _, _ = np.linalg.svd(Sbt)
-        P2 = U2[:, 0 : self.m]
+        self.U, _, _ = np.linalg.svd(Sbt)
+        P2 = self.U[:, 0 : self.m]
         self.W = np.dot(P2.T, P1).T
         return self.W
 
     def solve_eigh(self) -> np.ndarray:
         Sb = self._compute_SB()
         Sw = self._compute_SW()
-        _, U = scipy.linalg.eigh(Sb, Sw)
-        self.W = U[:, 0 : self.m]
+        _, self.U = scipy.linalg.eigh(Sb, Sw)
+        self.W = self.U[:, 0 : self.m]
         return self.W
 
     def get_projected_matrix(self):
@@ -87,29 +90,55 @@ class LDA:
             raise ValueError("W is not set. Run fit method first")
 
         self.projected_matrix: np.ndarray = self.W.T @ self.DTrain
+        if (
+            self.projected_matrix[0, self.LTrain == self.labels[0]].mean()
+            > self.projected_matrix[0, self.LTrain == self.labels[1]].mean()
+        ):
+            self.W = -self.W
+            self.projected_matrix = self.W.T @ self.DTrain
+
         return self.projected_matrix
 
     def calculate_threshold(self) -> float:
-        if hasattr(self, "projected_matrix") is False:
+        if hasattr(self, "projected_matrix") is False or self.projected_matrix is None:
             raise ValueError("Projected matrix is not set. Run fit method first")
-        
+
         self.threshold: float = (
-            self.projected_matrix[0, self.LTrain == 1].mean()
-            + self.projected_matrix[0, self.LTrain == 2].mean()
+            self.projected_matrix[0, self.LTrain == self.labels[0]].mean()
+            + self.projected_matrix[0, self.LTrain == self.labels[1]].mean()
         ) / 2.0
+
         return self.threshold
 
-    def predict(self, DVal: np.ndarray) -> np.ndarray:
+    def predict(
+        self,
+        DVal: np.ndarray,
+        *,
+        show_error_rate: bool = False,
+        LVal: np.ndarray = None,
+    ) -> np.ndarray:
         if hasattr(self, "W") is False:
             raise ValueError("W is not set. Run fit method first")
-        if hasattr(self, "threshold") is False:
+        if hasattr(self, "threshold") is False or not self.threshold:
             self.calculate_threshold()
 
-        projected_values = self.W.T @ DVal
-        print(projected_values.shape)
-        print(self.threshold)
-        predicted_values = np.zeros(shape=projected_values.shape, dtype=np.int32)
-        predicted_values[projected_values >= self.threshold] = 2
-        predicted_values[projected_values < self.threshold] = 1
-        return predicted_values
+        projected = self.W.T @ DVal
 
+        PVal = np.zeros(shape=projected.shape, dtype=np.int32)
+        PVal[projected >= self.threshold] = self.labels[1]
+        PVal[projected < self.threshold] = self.labels[0]
+
+        if show_error_rate and LVal is not None:
+            print(f"Error rate: {(PVal != LVal).sum()}/{(LVal.size)} => {((PVal != LVal).sum() / float(LVal.size) * 100):.1f}%")
+
+        return PVal
+
+    def take_n_components(self, n: int) -> np.ndarray:
+        return self.U[:, n]
+
+    def predict_custom_dir(
+        self, *, U: np.ndarray = None, D: np.ndarray = None
+    ) -> np.ndarray:
+        if U is None or D is None:
+            raise ValueError("Direction or Data not set")
+        return np.dot(U.T, D)

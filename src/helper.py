@@ -80,7 +80,7 @@ class DataHelper:
                     data_list.append(attrs)
 
                     label = line.split(sep)[-1].strip()
-                    
+
                     if labels_need_map:
                         label = labels_map[label]
 
@@ -94,7 +94,9 @@ class DataHelper:
         )
 
     @staticmethod
-    def split_db_2to1(D: np.ndarray, L: np.ndarray, seed=0) -> tuple:
+    def split_db_2to1(
+        D: np.ndarray, L: np.ndarray, seed=0
+    ) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
 
         nTrain = int(D.shape[1] * 2.0 / 3.0)
         np.random.seed(seed)
