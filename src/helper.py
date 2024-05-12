@@ -135,3 +135,15 @@ class MathHelper:
         centered_matrix: np.ndarray = MathHelper.center_matrix(matrix)
 
         return np.dot(centered_matrix, centered_matrix.T) / float(matrix.shape[0])
+    
+    @staticmethod
+    def inv_matrix(matrix: np.ndarray) -> np.ndarray:
+        return np.linalg.inv(matrix)
+
+    @staticmethod
+    def det_matrix(matrix: np.ndarray) -> float:
+        return np.linalg.det(matrix)
+    
+    @staticmethod
+    def log_det_matrix(matrix: np.ndarray) -> float:
+        return np.linalg.slogdet(matrix)[1]
