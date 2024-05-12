@@ -24,7 +24,7 @@ def classification_no_preprocess() -> None:
     lda.set_train_data(DTrain, LTrain)
     lda.fit()
 
-    PVal = lda.predict(DVal, LVal=LVal, show_error_rate=True)
+    PVal = lda.validate(DVal, y_val=LVal, show_results=True)
 
     print("Labels:     ", LVal)
 
@@ -38,32 +38,30 @@ def classification_no_preprocess() -> None:
 
 def classification() -> None:
 
-    DIris, LIris = d.load_iris()
+    x_iris, y_iris = d.load_iris()
 
-    D = DIris[:, LIris != 0]
-    L = LIris[LIris != 0]
+    D = x_iris[:, y_iris != 0]
+    L = y_iris[y_iris != 0]
     # Train: training
     # Val: validation
-    (DTrain, LTrain), (DVal, LVal) = d.split_db_2to1(D, L)
+    (x_train, y_train), (x_val, y_val) = d.split_db_2to1(D, L)
 
     pca = PCA(m=2)
-    pca.fit(DTrain, LTrain)
+    pca.fit(x_train, y_train)
 
+    x_val_pca = pca.predict(x_val)
 
-    DVal_pca = pca.predict(DVal)
-
-    DTrain_pca = pca.get_projected_matrix()
+    x_train_pca = pca.get_projected_matrix()
 
     lda = LDA(solver="svd", m=1)
-    lda.fit(DTrain_pca, LTrain)
+    lda.fit(x_train_pca, y_train)
 
-    PVal = lda.predict(DVal_pca, LVal=LVal, show_error_rate=True)
+    PVal = lda.validate(x_val_pca, y_val=y_val, show_results=True)
 
-
-    pca_matrix = np.vstack((DTrain_pca, LTrain))
+    pca_matrix = np.vstack((x_train_pca, y_train))
     vis.plot_scatter_matrix(
         pca_matrix,
-        LTrain,
+        y_train,
         labels_name={1: "Versicolor", 2: "Virginica"},
         title="LDA Projection of Iris Dataset",
         x_label="LDA Projection 1",
@@ -74,13 +72,13 @@ def classification() -> None:
 
     lda_matrix = lda.get_projected_matrix()
 
-    lda_train = np.vstack((lda_matrix, LTrain))
+    lda_train = np.vstack((lda_matrix, y_train))
 
-    lda_predict = np.vstack((DVal_pca, PVal))
+    lda_predict = np.vstack((x_val_pca, PVal))
 
     vis.plot_hist(
         lda_train,
-        LTrain,
+        y_train,
         labels_name={1: "Versicolor", 2: "Virginica"},
         title="LDA Training Set",
         x_label="LDA Projection 1",
@@ -91,7 +89,7 @@ def classification() -> None:
 
     vis.plot_hist(
         lda_predict,
-        LVal,
+        y_val,
         labels_name={1: "Versicolor", 2: "Virginica"},
         title="LDA Prediction Set",
         x_label="LDA Projection 1",
@@ -99,7 +97,6 @@ def classification() -> None:
         # invert_y_axis=True,
         invert_x_axis=True,
     )
-
 
 
 def test_lda():

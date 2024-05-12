@@ -42,7 +42,7 @@ def analyze_lda_features():
     lda.fit()
     six_main_components = [lda.take_n_components(i) for i in range(6)]
     six_main_projection = [
-        lda.predict_custom_dir(U=component, D=D) for component in six_main_components
+        lda.predict_custom_dir(U=component, x=D) for component in six_main_components
     ]
     print(six_main_components[0].shape)
     print(six_main_projection[0].shape)
@@ -63,18 +63,48 @@ def analyze_lda_features():
 
 def classify():
     D, L = dh.load_txt("datasets/trainData.txt", features_type=float)
-    (DTrain, LTrain), (DVal, Lval) = dh.split_db_2to1(D, L, seed=0)
+    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(D, L, seed=0)
 
     lda = LDA(m=1)
-    lda.fit(DTrain, LTrain)
+    lda.fit(x_train, y_train)
 
-    lda.predict(DVal, show_error_rate=True, LVal=Lval)
+    lda.validate(x_val, y_val=y_val, show_results=True)
+
+    lda.optimize_threshold(steps=10)
+    lda.validate(x_val, y_val=y_val, show_results=True)
+
+
+def classify_pca_preprocess():
+    D, L = dh.load_txt("datasets/trainData.txt", features_type=float)
+    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(D, L, seed=0)
+
+    best_config = {"pca_m": 0, "lda_m": 0, "error_rate": 1.0}
+
+    for i in range(2, 6):
+        pca = PCA(m=i)
+        pca.fit(x_train, y_train)
+        x_train_pca = pca.transform(x_train)
+        x_val_pca = pca.transform(x_val)
+        lda = LDA(m=1)
+        lda.fit(x_train_pca, y_train)
+        # lda.optimize_threshold(steps=1000)
+        print(f"PCA with m = {i} components")
+        _, error_rate = lda.validate(x_val_pca, y_val=y_val)
+        if error_rate < best_config["error_rate"]:
+            best_config["pca_m"] = i
+            best_config["lda_m"] = 1
+            best_config["error_rate"] = error_rate
+
+    best_config["error_rate"] = str(best_config["error_rate"] * 100) + "%"
+    print("\nFinished Loop")
+    print(best_config)
 
 
 def main():
-    analyze_pca_features()
+    # analyze_pca_features()
     # analyze_lda_features()
-    # classify()
+    classify()
+    # classify_pca_preprocess()
 
 
 if __name__ == "__main__":

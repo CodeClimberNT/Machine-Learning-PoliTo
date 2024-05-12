@@ -47,3 +47,6 @@ class PCA:
         if U is None or D is None:
             raise ValueError("Direction or Data not set")
         return np.dot(U.T, D)
+
+    def transform(self, D: np.ndarray) -> np.ndarray:
+        return np.dot(self.P.T, D)
