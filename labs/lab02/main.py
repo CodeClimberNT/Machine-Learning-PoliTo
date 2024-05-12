@@ -44,7 +44,7 @@ def main() -> None:
     print(x.shape)
     print(y.shape)
 
-    features = ['Sepal length', 'Sepal width', 'Petal length', 'Petal width']
+    features: list = ['Sepal length', 'Sepal width', 'Petal length', 'Petal width']
     plot(x, y, features)
 
     mu = x.mean(axis=1).reshape(x.shape[0], 1)
