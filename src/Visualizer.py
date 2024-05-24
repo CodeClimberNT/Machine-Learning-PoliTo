@@ -40,7 +40,7 @@ class Visualizer:
                         label=labels_name[label],
                         alpha=0.5,
                     )
-                # TODO temporary fix, need to better undestand the change in the data shape 
+                # TODO temporary fix, need to better understand the change in the data shape 
                 except IndexError:
                     plt.hist(
                         data[labels == label],
