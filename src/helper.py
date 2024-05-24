@@ -3,18 +3,7 @@ import numpy as np
 import timeit
 
 
-class TimeHelper:
-    @staticmethod
-    def start_timer():
-        return timeit.default_timer()
-
-    def end_timer(start_time, print_time=True) -> float:
-        if print_time:
-            print(f"Execution time: {timeit.default_timer() - start_time} seconds")
-        return timeit.default_timer() - start_time
-
-
-class DataHelper:
+class DatasetImporterHelper:
     @staticmethod
     def load_iris():
         import sklearn.datasets
@@ -24,31 +13,11 @@ class DataHelper:
             sklearn.datasets.load_iris()["target"],
         )
 
-    # @staticmethod
-    # @DeprecationWarning
-    # def load_txt(
-    #     file_path: str,
-    #     delimiter: str = ",",
-    #     features_type: type = float,
-    #     labels_type: type = float,
-    #     return_labels_in_data_matrix: bool = False,
-    # ) -> tuple[np.ndarray, np.ndarray]:
-
-    #     # Load the array from the text file and convert all but last column to float
-    #     data = np.loadtxt(file_path, delimiter=delimiter, dtype=features_type)
-
-    #     # return np.rot90(data)
-
-    #     if return_labels_in_data_matrix:
-    #         x = data
-    #     else:
-    #         # Extract features (all but last column)
-    #         x = data[:, :-1]
-
-    #     # Extract labels (last column)
-    #     y = data[:, -1].astype(labels_type)
-
-    #     return x, y
+    @staticmethod
+    def load_train_project():
+        return DatasetImporterHelper.load_txt(
+            "datasets/project/trainData.txt", features_type=float
+        )
 
     @staticmethod
     def load_txt(
@@ -94,6 +63,32 @@ class DataHelper:
         )
 
     @staticmethod
+    @DeprecationWarning
+    def load_txt_with_np(
+        file_path: str,
+        delimiter: str = ",",
+        features_type: type = float,
+        labels_type: type = float,
+        return_labels_in_data_matrix: bool = False,
+    ) -> tuple[np.ndarray, np.ndarray]:
+
+        # Load the array from the text file and convert all but last column to float
+        data = np.loadtxt(file_path, delimiter=delimiter, dtype=features_type)
+
+        if return_labels_in_data_matrix:
+            x = data
+        else:
+            # Extract features (all but last column)
+            x = data[:, :-1]
+
+        # Extract labels (last column)
+        y = data[:, -1].astype(labels_type)
+
+        return x, y
+
+
+class DataPreprocessorHelper:
+    @staticmethod
     def split_db_2to1(
         D: np.ndarray, L: np.ndarray, seed=0
     ) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
@@ -135,7 +130,7 @@ class MathHelper:
         centered_matrix: np.ndarray = MathHelper.center_matrix(matrix)
 
         return np.dot(centered_matrix, centered_matrix.T) / float(matrix.shape[0])
-    
+
     @staticmethod
     def inv_matrix(matrix: np.ndarray) -> np.ndarray:
         return np.linalg.inv(matrix)
@@ -143,7 +138,26 @@ class MathHelper:
     @staticmethod
     def det_matrix(matrix: np.ndarray) -> float:
         return np.linalg.det(matrix)
-    
+
     @staticmethod
     def log_det_matrix(matrix: np.ndarray) -> float:
         return np.linalg.slogdet(matrix)[1]
+
+
+class TimeHelper:
+    def __init__(self, print_time: bool = True) -> None:
+        self.start_time: float = timeit.default_timer()
+        self.end_time: float = None
+        self.print_time: float = print_time
+        self.delta_time: float = None
+
+    def start_timer(self) -> float:
+        self.start_time: float = timeit.default_timer()
+        return self.start_time
+
+    def end_timer(self, print_time=True) -> float:
+        self.end_time: float = timeit.default_timer()
+        self.delta_time: float = self.end_time - self.start_time
+        if print_time:
+            print(f"Execution time: {self.delta_time} seconds")
+        return self.delta_time

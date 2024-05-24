@@ -1,5 +1,5 @@
 import numpy as np
-from helper import DataHelper as d
+from helper import DatasetImporterHelper as ds
 
 
 from LinearDiscriminantAnalysis import LDA
@@ -12,13 +12,13 @@ from Visualizer import Visualizer as vis
 
 def classification_no_preprocess() -> None:
 
-    DIris, LIris = d.load_iris()
+    DIris, LIris = ds.load_iris()
 
     D = DIris[:, LIris != 0]
 
     L = LIris[LIris != 0]
 
-    (DTrain, LTrain), (DVal, LVal) = d.split_db_2to1(D, L)
+    (DTrain, LTrain), (DVal, LVal) = ds.split_db_2to1(D, L)
 
     lda = LDA(solver="svd", m=1)
     lda.set_train_data(DTrain, LTrain)
@@ -38,13 +38,13 @@ def classification_no_preprocess() -> None:
 
 def classification() -> None:
 
-    x_iris, y_iris = d.load_iris()
+    x_iris, y_iris = ds.load_iris()
 
     D = x_iris[:, y_iris != 0]
     L = y_iris[y_iris != 0]
     # Train: training
     # Val: validation
-    (x_train, y_train), (x_val, y_val) = d.split_db_2to1(D, L)
+    (x_train, y_train), (x_val, y_val) = ds.split_db_2to1(D, L)
 
     pca = PCA(m=2)
     pca.fit(x_train, y_train)
@@ -100,7 +100,7 @@ def classification() -> None:
 
 
 def test_lda():
-    D, L = d.load_iris()
+    D, L = ds.load_iris()
     lda = LDA(solver="svd", m=2)
     lda.set_train_data(D, L)
     lda.fit()
@@ -132,7 +132,7 @@ def test_lda():
 
 
 def test_pca():
-    D, L = d.load_iris()
+    D, L = ds.load_iris()
     pca = PCA(m=2)
     pca.set_train_data(D, L)
     pca.fit()

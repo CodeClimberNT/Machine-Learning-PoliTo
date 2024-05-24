@@ -1,7 +1,7 @@
 import numpy as np
 from helper import MathHelper as mh
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from MultivariateGaussian import MVG
 

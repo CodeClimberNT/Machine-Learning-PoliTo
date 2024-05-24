@@ -1,13 +1,13 @@
 from LinearDiscriminantAnalysis import LDA
 from PrincipalComponentAnalysis import PCA
-from helper import DataHelper as dh
+from helper import DatasetImporterHelper as ds
 
 from Visualizer import Visualizer as vis
 
 
 def analyze_pca_features():
 
-    D, L = dh.load_txt("datasets/trainData.txt", features_type=float)
+    D, L = ds.load_train_project()
 
     pca = PCA(m=1)
 
@@ -34,7 +34,7 @@ def analyze_pca_features():
 
 
 def analyze_lda_features():
-    D, L = dh.load_txt("datasets/trainData.txt", features_type=float)
+    D, L = ds.load_train_project()
 
     lda = LDA(m=1)
 
@@ -62,8 +62,8 @@ def analyze_lda_features():
 
 
 def classify():
-    D, L = dh.load_txt("datasets/trainData.txt", features_type=float)
-    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(D, L, seed=0)
+    D, L = ds.load_train_project()
+    (x_train, y_train), (x_val, y_val) = ds.split_db_2to1(D, L, seed=0)
 
     lda = LDA(m=1)
     lda.fit(x_train, y_train)
@@ -75,8 +75,8 @@ def classify():
 
 
 def classify_pca_preprocess():
-    D, L = dh.load_txt("datasets/trainData.txt", features_type=float)
-    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(D, L, seed=0)
+    D, L = ds.load_train_project()
+    (x_train, y_train), (x_val, y_val) = ds.split_db_2to1(D, L, seed=0)
 
     best_config = {"pca_m": 0, "lda_m": 0, "error_rate": 1.0}
 
