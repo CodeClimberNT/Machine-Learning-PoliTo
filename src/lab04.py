@@ -15,7 +15,7 @@ def main() -> None:
 
     pdfSol = np.load("labs/lab04/solution/llGAU.npy")
     pdfGau = mvg.logpdf_GAU_ND(mh.v_row(XPlot))
-    print("First solution (if 0.0 the solution is correct):")
+    print("First distance from solution (if ~=0 the solution is correct):")
     print(np.abs(pdfSol - pdfGau).max())
 
     XND: np.ndarray = np.load("labs/lab04/solution/XND.npy")
@@ -26,6 +26,7 @@ def main() -> None:
     pdfSol = np.load("labs/lab04/solution/llND.npy")
     pdfGau = mvg.logpdf_GAU_ND(XND)
 
+    print("Multivariate distance from solution (if ~=0 the solution is correct):")
     print(np.abs(pdfSol - pdfGau).max())
 
 if __name__ == "__main__":
