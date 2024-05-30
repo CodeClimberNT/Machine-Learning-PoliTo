@@ -1,5 +1,5 @@
 import numpy as np
-
+import os
 import timeit
 
 
@@ -15,18 +15,28 @@ class DatasetImporterHelper:
 
     @staticmethod
     def load_train_project():
-        return DatasetImporterHelper.load_txt(
-            "datasets/project/trainData.txt", features_type=float
-        )
+        abs_path: str = "datasets/project/trainData.txt"
+        rel_path: str = "../datasets/project/trainData.txt"
+        if DatasetImporterHelper.file_exists(abs_path):
+            return DatasetImporterHelper.load_txt(
+                abs_path, features_type=float
+            )
+        elif DatasetImporterHelper.file_exists(rel_path):
+            return DatasetImporterHelper.load_txt(
+                rel_path, features_type=float
+            )
+        else:
+            print("File not found")
+            return None
 
     @staticmethod
     def load_txt(
-        file_path: str,
-        sep: str = ",",
-        labels_need_map: bool = False,
-        labels_map: dict[str | int, int] = None,
-        features_type: type = float,
-        labels_type: type = np.int32,
+            file_path: str,
+            sep: str = ",",
+            labels_need_map: bool = False,
+            labels_map: dict[str | int, int] = None,
+            features_type: type = float,
+            labels_type: type = np.int32,
     ) -> tuple[np.ndarray, np.ndarray]:
         data_list: list = []
         labels_list: list = []
@@ -65,11 +75,11 @@ class DatasetImporterHelper:
     @staticmethod
     @DeprecationWarning
     def load_txt_with_np(
-        file_path: str,
-        delimiter: str = ",",
-        features_type: type = float,
-        labels_type: type = float,
-        return_labels_in_data_matrix: bool = False,
+            file_path: str,
+            delimiter: str = ",",
+            features_type: type = float,
+            labels_type: type = float,
+            return_labels_in_data_matrix: bool = False,
     ) -> tuple[np.ndarray, np.ndarray]:
 
         # Load the array from the text file and convert all but last column to float
@@ -86,13 +96,16 @@ class DatasetImporterHelper:
 
         return x, y
 
+    @staticmethod
+    def file_exists(file_path):
+        return os.path.isfile(file_path)
+
 
 class DataPreprocessorHelper:
     @staticmethod
     def split_db_2to1(
-        D: np.ndarray, L: np.ndarray, seed=0
+            D: np.ndarray, L: np.ndarray, seed=0
     ) -> tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]:
-
         nTrain = int(D.shape[1] * 2.0 / 3.0)
         np.random.seed(seed)
 
@@ -120,16 +133,29 @@ class MathHelper:
         return x.reshape((1, x.size))
 
     @staticmethod
+    def compute_mu(matrix: np.ndarray) -> np.ndarray:
+        return MathHelper.v_col(matrix.mean(1))
+
+    @staticmethod
     def center_matrix(matrix: np.ndarray) -> np.ndarray:
-        mu = matrix.mean(1).reshape(-1, 1)
+        mu = MathHelper.compute_mu(matrix)
 
         return matrix - mu
 
     @staticmethod
     def cv_matrix(matrix: np.ndarray) -> np.ndarray:
         centered_matrix: np.ndarray = MathHelper.center_matrix(matrix)
+        # determine the main dimension of the matrix
+        len_matrix = (
+            float(matrix.shape[0])
+            if float(matrix.shape[0]) > float(matrix.shape[1])
+            else float(matrix.shape[1])
+        )
+        return np.dot(centered_matrix, centered_matrix.T) / len_matrix
 
-        return np.dot(centered_matrix, centered_matrix.T) / float(matrix.shape[0])
+    @staticmethod
+    def compute_mu_and_sigma(matrix: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        return MathHelper.compute_mu(matrix), MathHelper.cv_matrix(matrix)
 
     @staticmethod
     def inv_matrix(matrix: np.ndarray) -> np.ndarray:
