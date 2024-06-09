@@ -169,6 +169,14 @@ class MathHelper:
     def log_det_matrix(matrix: np.ndarray) -> float:
         return np.linalg.slogdet(matrix)[1]
 
+    @staticmethod
+    def mean(matrix: np.ndarray, axis: int = 1) -> np.ndarray:
+        return np.mean(matrix, axis=axis)
+
+    @staticmethod
+    def var(matrix: np.ndarray, axis: int = 1) -> np.ndarray:
+        return np.var(matrix, axis=axis)
+
 
 class TimeHelper:
     """

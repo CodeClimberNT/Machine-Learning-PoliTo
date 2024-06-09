@@ -3,8 +3,6 @@ from matplotlib import pyplot as plt
 
 
 class Visualizer:
-    def __init__(self) -> None:
-        pass
 
     @staticmethod
     def plot_hist(
@@ -20,13 +18,7 @@ class Visualizer:
             invert_x_axis: bool = False,
             plot_each_feature: bool = False,
     ) -> None:
-        unique_labels = np.unique(labels)
-        colors = plt.cm.rainbow(np.linspace(0, 1, len(unique_labels)))
-
-        if labels_name and len(labels_name) == len(unique_labels):
-            label_names = {label: labels_name[label] for label in unique_labels}
-        else:
-            label_names = {label: str(label) for label in unique_labels}
+        colors, label_names, unique_labels = Visualizer.get_data_and_plot_info(labels, labels_name)
 
         if plot_each_feature:
             for i in range(data.shape[0]):
@@ -75,6 +67,16 @@ class Visualizer:
             if invert_x_axis:
                 plt.gca().invert_xaxis()
             plt.show()
+
+    @staticmethod
+    def get_data_and_plot_info(labels, labels_name):
+        unique_labels = np.unique(labels)
+        colors = plt.cm.rainbow(np.linspace(0, 1, len(unique_labels)))
+        if labels_name and len(labels_name) == len(unique_labels):
+            label_names = {label: labels_name[label] for label in unique_labels}
+        else:
+            label_names = {label: str(label) for label in unique_labels}
+        return colors, label_names, unique_labels
 
     @staticmethod
     def plot_scatter_matrix(
@@ -128,21 +130,16 @@ class Visualizer:
             labels: np.ndarray,
             *,
             bins: int = 10,
+            alpha: float = 0.4,
             labels_name: dict[int, str] = None,
             title: str | None = None,
             custom_titles: dict[tuple[int, int], str] = None,
             custom_x_labels: dict[tuple[int, int], str] = None,
             custom_y_labels: dict[tuple[int, int], str] = None,
-            show_grid: bool = False,
-            invert_x_axis: bool = False,
+            show_legend: bool = False,
+            show_grid: bool = False
     ) -> None:
-        unique_labels = np.unique(labels)
-        colors = plt.cm.rainbow(np.linspace(0, 1, len(unique_labels)))
-
-        if labels_name and len(labels_name) == len(unique_labels):
-            label_names = {label: labels_name[label] for label in unique_labels}
-        else:
-            label_names = {label: str(label) for label in unique_labels}
+        colors, label_names, unique_labels = Visualizer.get_data_and_plot_info(labels, labels_name)
 
         num_features = data.shape[0]
         pairs = [(i, i + 1) for i in range(0, num_features, 2)]
@@ -163,7 +160,7 @@ class Visualizer:
                         color=color,
                         density=True,
                         bins=bins,
-                        alpha=0.5,
+                        alpha=alpha,
                         label=label_names[label],
                     )
                 custom_title = custom_titles.get((feature_index, feature_index),
@@ -177,8 +174,9 @@ class Visualizer:
                 ax.set_xlabel(custom_x_label)
                 ax.set_ylabel(custom_y_label)
                 ax.grid(show_grid)
-                if invert_x_axis:
-                    ax.invert_xaxis()
+                if show_legend:
+                    # and ax_row == 0:
+                    ax.legend()
 
             # Off-diagonal scatter plots
             for ax_row, ax_col in [(0, 1), (1, 0)]:
@@ -204,11 +202,11 @@ class Visualizer:
                 ax.set_xlabel(custom_x_label)
                 ax.set_ylabel(custom_y_label)
                 ax.grid(show_grid)
-                if invert_x_axis:
-                    ax.invert_xaxis()
+                if show_legend and ax_row == 0 and ax_col == 1:
+                    ax.legend()  # Add legend to scatter plot subplot
 
-            handles, labels_legend = ax.get_legend_handles_labels()
-            fig.legend(handles, labels_legend, loc='upper right')
+            # handles, labels_legend = ax.get_legend_handles_labels()
+            # fig.legend(handles, labels_legend, loc='upper right')
 
             if title:
                 fig.suptitle(title)
