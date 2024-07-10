@@ -1,4 +1,4 @@
-[![wakatime](https://wakatime.com/badge/user/cc1d63f7-8788-4064-887b-bd78a68b87f2/project/018e46fd-3282-41d4-850e-73f8dc354134.svg)](https://wakatime.com/badge/user/cc1d63f7-8788-4064-887b-bd78a68b87f2/project/018e46fd-3282-41d4-850e-73f8dc354134)
+[![wakatime](https://wakatime.com/badge/user/cc1d63f7-8788-4064-887b-bd78a68b87f2/project/018e46fd-3282-41d4-850e-73f8dc354134.svg?style=for-the-badge)](https://wakatime.com/badge/user/cc1d63f7-8788-4064-887b-bd78a68b87f2/project/018e46fd-3282-41d4-850e-73f8dc354134)
 # Machine Learning and Pattern Recognition
 
 
