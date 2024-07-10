@@ -1,7 +1,6 @@
-from MultivariateGaussian import MVG
-from helper import DatasetImporterHelper as ds
+from src.models.gaussian_models import GaussianModel
+from src.helpers import DatasetImporterHelper as ds, MathHelper as mh
 
-from helper import MathHelper as mh
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -12,7 +11,7 @@ def dataset_multivariate_analysis():
     unique_features = len(x)
     print(f"Unique features: {unique_features}")
     for i in range(unique_features):
-        mvg = MVG(X=mh.v_row(x[i]))
+        mvg = GaussianModel().fit(X=mh.v_row(x[i]))
         XPlot = np.linspace(-8, 12, 1000)
 
         plt.figure()

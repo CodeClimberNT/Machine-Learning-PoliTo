@@ -24,7 +24,12 @@ class Visualizer:
             for i in range(data.shape[0]):
                 plt.figure()
                 for label, color in zip(unique_labels, colors):
-                    data_by_label = data[i, labels == label]
+                    # Check if data is 2-dimensional
+                    if data.ndim > 1:
+                        data_by_label = data[i, labels == label]
+                    else:
+                        # This case handles 1-dimensional data
+                        data_by_label = data[labels == label] if i == 0 else []
                     plt.hist(
                         data_by_label,
                         color=color,
@@ -47,7 +52,12 @@ class Visualizer:
         else:
             plt.figure()
             for label, color in zip(unique_labels, colors):
-                data_by_label = data[:, labels == label].flatten()
+                if data.ndim > 1:
+                    data_by_label = data[:, labels == label]
+                else:
+                    # This case handles 1-dimensional data
+                    data_by_label = data[labels == label]
+
                 plt.hist(
                     data_by_label,
                     color=color,

@@ -1,26 +1,25 @@
 import numpy as np
-from helper import DatasetImporterHelper as ds
+from src.helpers import DatasetImporterHelper as ds
+from src.helpers import Visualizer as vis
+from src.helpers import DataHandler as dp
 
-
-from LinearDiscriminantAnalysis import LDA
-from PrincipalComponentAnalysis import PCA
-from Visualizer import Visualizer as vis
+from src.models import LinearDiscriminantAnalysis
+from src.models import PrincipalComponentAnalysis
 
 
 # CLASSIFICATION
 
 
 def classification_no_preprocess() -> None:
-
     DIris, LIris = ds.load_iris()
 
     D = DIris[:, LIris != 0]
 
     L = LIris[LIris != 0]
 
-    (DTrain, LTrain), (DVal, LVal) = ds.split_db_2to1(D, L)
+    (DTrain, LTrain), (DVal, LVal) = dp.split_db_2to1(D, L)
 
-    lda = LDA(solver="svd", m=1)
+    lda = LinearDiscriminantAnalysis(solver="svd", m=1)
     lda.set_train_data(DTrain, LTrain)
     lda.fit()
 
@@ -37,23 +36,22 @@ def classification_no_preprocess() -> None:
 
 
 def classification() -> None:
-
     x_iris, y_iris = ds.load_iris()
 
     D = x_iris[:, y_iris != 0]
     L = y_iris[y_iris != 0]
     # Train: training
     # Val: validation
-    (x_train, y_train), (x_val, y_val) = ds.split_db_2to1(D, L)
+    (x_train, y_train), (x_val, y_val) = dp.split_db_2to1(D, L)
 
-    pca = PCA(m=2)
+    pca = PrincipalComponentAnalysis(m=2)
     pca.fit(x_train, y_train)
 
     x_val_pca = pca.predict(x_val)
 
     x_train_pca = pca.get_projected_matrix()
 
-    lda = LDA(solver="svd", m=1)
+    lda = LinearDiscriminantAnalysis(solver="svd", m=1)
     lda.fit(x_train_pca, y_train)
 
     PVal = lda.validate(x_val_pca, y_val=y_val, show_results=True)
@@ -101,7 +99,7 @@ def classification() -> None:
 
 def test_lda():
     D, L = ds.load_iris()
-    lda = LDA(solver="svd", m=2)
+    lda = LinearDiscriminantAnalysis(solver="svd", m=2)
     lda.set_train_data(D, L)
     lda.fit()
     y = lda.get_projected_matrix()
@@ -133,7 +131,7 @@ def test_lda():
 
 def test_pca():
     D, L = ds.load_iris()
-    pca = PCA(m=2)
+    pca = PrincipalComponentAnalysis(m=2)
     pca.set_train_data(D, L)
     pca.fit()
     y = pca.get_projected_matrix()
@@ -175,7 +173,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-
     # Configure logging level
 
     # logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")

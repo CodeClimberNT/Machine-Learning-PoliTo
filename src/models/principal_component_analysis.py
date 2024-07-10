@@ -1,16 +1,23 @@
 import numpy as np
 
-from helper import MathHelper as mh
+from src.helpers import MathHelper as mh
 
 
-class PCA:
+class PrincipalComponentAnalysis:
     def __init__(self, *, m: int = 2):
+        self.P = None
+        self.U = None
+        self.num_classes = None
+        self.mu = None
+        self.L = None
+        self.D = None
+        self.m = None
         self.set_dimensions(m)
 
     def set_dimensions(self, m: int) -> None:
         self.m = m
 
-    def set_train_data(self, D: np.ndarray, L: np.ndarray) -> np.ndarray:
+    def set_train_data(self, D: np.ndarray, L: np.ndarray) -> None:
         self.D = D
         self.L = L
 
@@ -24,7 +31,7 @@ class PCA:
     def get_m_components(self) -> np.ndarray:
         C = mh.cv_matrix(self.D)
         self.U, _, _ = np.linalg.svd(C)
-        self.P = self.U[:, 0 : self.m]
+        self.P = self.U[:, 0: self.m]
 
         return self.P
 

@@ -1,12 +1,10 @@
 import numpy as np
 import scipy.linalg
 
-from helper import MathHelper as mh
-
-from Visualizer import Visualizer as vis
+from src.helpers import MathHelper as mh
 
 
-class LDA:
+class LinearDiscriminantAnalysis:
     def __init__(self, solver: str = "svd", m: int = 2):
         self.set_solver(solver)
         self.set_dimensions(m)
@@ -27,9 +25,9 @@ class LDA:
         self.m = m
 
     def set_train_data(
-        self,
-        x: np.ndarray,
-        y: np.ndarray,
+            self,
+            x: np.ndarray,
+            y: np.ndarray,
     ) -> None:
         self.x = x
         self.y = y
@@ -71,12 +69,12 @@ class LDA:
     def solve_svd(self):
         Sw: np.ndarray = self._compute_SW()
         U1, s, _ = np.linalg.svd(Sw)
-        P1: np.ndarray = np.dot(U1 * mh.v_row(1.0 / (s**0.5)), U1.T)
+        P1: np.ndarray = np.dot(U1 * mh.v_row(1.0 / (s ** 0.5)), U1.T)
 
         Sb: np.ndarray = self._compute_SB()
         Sbt: np.ndarray = np.dot(P1, np.dot(Sb, P1.T))
         self.U, _, _ = np.linalg.svd(Sbt)
-        P2: np.ndarray = self.U[:, 0 : self.m]
+        P2: np.ndarray = self.U[:, 0: self.m]
         self.W: np.ndarray = np.dot(P2.T, P1).T
         return self.W
 
@@ -84,7 +82,7 @@ class LDA:
         Sb: np.ndarray = self._compute_SB()
         Sw: np.ndarray = self._compute_SW()
         _, self.U = scipy.linalg.eigh(Sb, Sw)
-        self.W: np.ndarray = self.U[:, 0 : self.m]
+        self.W: np.ndarray = self.U[:, 0: self.m]
         return self.W
 
     def get_projected_matrix(self):
@@ -93,8 +91,8 @@ class LDA:
 
         self.projected_matrix: np.ndarray = self.W.T @ self.x
         if (
-            self.projected_matrix[0, self.y == self.labels[0]].mean()
-            > self.projected_matrix[0, self.y == self.labels[1]].mean()
+                self.projected_matrix[0, self.y == self.labels[0]].mean()
+                > self.projected_matrix[0, self.y == self.labels[1]].mean()
         ):
             self.W = -self.W
             self.projected_matrix = self.W.T @ self.x
@@ -106,9 +104,9 @@ class LDA:
             raise ValueError("Projected matrix is not set. Run fit method first")
 
         self.threshold: float = (
-            self.projected_matrix[0, self.y == self.labels[0]].mean()
-            + self.projected_matrix[0, self.y == self.labels[1]].mean()
-        ) / 2.0
+                                        self.projected_matrix[0, self.y == self.labels[0]].mean()
+                                        + self.projected_matrix[0, self.y == self.labels[1]].mean()
+                                ) / 2.0
 
         return self.threshold
 
@@ -117,7 +115,7 @@ class LDA:
         return self.threshold
 
     def optimize_threshold(
-        self, *, steps: np.int64, show_threshold: bool = True
+            self, *, steps: np.int64, show_threshold: bool = True
     ) -> float:
         if hasattr(self, "projected_matrix") is False or self.projected_matrix is None:
             raise ValueError("Projected matrix is not set. Run fit method first")
@@ -128,7 +126,7 @@ class LDA:
         _, best_error_rate = self.validate(self.x, self.y)
 
         for threshold in np.linspace(
-            self.projected_matrix.min(), self.projected_matrix.max(), steps
+                self.projected_matrix.min(), self.projected_matrix.max(), steps
         ):
             predicted = np.zeros(shape=self.projected_matrix.shape, dtype=np.int32)
             predicted[self.projected_matrix >= threshold] = self.labels[1]
@@ -148,12 +146,12 @@ class LDA:
         return self.threshold
 
     def validate(
-        self,
-        x_val: np.ndarray,
-        y_val: np.ndarray,
-        *,
-        threshold: float = None,
-        show_results: bool = False,
+            self,
+            x_val: np.ndarray,
+            y_val: np.ndarray,
+            *,
+            threshold: float = None,
+            show_results: bool = False,
     ) -> np.ndarray:
 
         if threshold:
@@ -166,20 +164,20 @@ class LDA:
             self.calculate_threshold()
 
         predicted = self.__get_predicted(x_val, self.threshold)
-        
-        error_rate = self.get_error_rate(predicted ,y_val)
+
+        error_rate = self.get_error_rate(predicted, y_val)
         if show_results and y_val is not None:
             self.show_error_rate(predicted, y_val, error_rate)
 
         return (predicted, error_rate)
 
     def validate_custom_threshold(
-        self,
-        x_val: np.ndarray,
-        y_val: np.ndarray,
-        *,
-        threshold: float = None,
-        show_results: bool = False,
+            self,
+            x_val: np.ndarray,
+            y_val: np.ndarray,
+            *,
+            threshold: float = None,
+            show_results: bool = False,
     ) -> np.ndarray:
         if hasattr(self, "W") is False:
             raise ValueError("W is not set. Run fit method first")
@@ -192,7 +190,7 @@ class LDA:
 
         predicted = self.__get_predicted(x_val, threshold)
 
-        error_rate = self.get_error_rate(predicted ,y_val)
+        error_rate = self.get_error_rate(predicted, y_val)
         if show_results and y_val is not None:
             self.show_error_rate(predicted, y_val, error_rate)
 
@@ -211,21 +209,21 @@ class LDA:
         return self.W.T @ x
 
     def show_error_rate(
-        self, predicted: np.ndarray, labels: np.ndarray, error_rate: float
+            self, predicted: np.ndarray, labels: np.ndarray, error_rate: float
     ) -> None:
         print(
             f"Error rate: {(predicted != labels).sum()}/{(labels.size)} => {(error_rate * 100):.1f}%"
         )
 
     def get_error_rate(
-        self,
-        predicted: np.ndarray,
-        labels: np.ndarray,
-        *,
-        show_values: bool = False,
+            self,
+            predicted: np.ndarray,
+            labels: np.ndarray,
+            *,
+            show_values: bool = False,
     ) -> float:
         error_rate: float = (predicted != labels).sum() / float(labels.size)
-        
+
         if show_values:
             show_values(predicted, labels, error_rate)
 
@@ -235,7 +233,7 @@ class LDA:
         return self.U[:, n]
 
     def predict_custom_dir(
-        self, *, U: np.ndarray = None, x: np.ndarray = None
+            self, *, U: np.ndarray = None, x: np.ndarray = None
     ) -> np.ndarray:
         if U is None or x is None:
             raise ValueError("Direction or Data not set")

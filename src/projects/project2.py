@@ -1,12 +1,8 @@
-from LinearDiscriminantAnalysis import LDA
-from PrincipalComponentAnalysis import PCA
-from helper import DatasetImporterHelper as ds
-
-from Visualizer import Visualizer as vis
+from src.helpers import DatasetImporterHelper as ds, Visualizer as vis, DataHandler as dh
+from src.models import LinearDiscriminantAnalysis as LDA, PrincipalComponentAnalysis as PCA
 
 
 def analyze_pca_features():
-
     D, L = ds.load_train_project()
 
     pca = PCA(m=1)
@@ -26,7 +22,7 @@ def analyze_pca_features():
             data,
             L,
             labels_name=labels_name,
-            title=f"PCA Feature {i+1}",
+            title=f"PCA Feature {i + 1}",
             x_label="Label Distribution",
             y_label="Frequency",
             invert_x_axis=True,
@@ -38,8 +34,7 @@ def analyze_lda_features():
 
     lda = LDA(m=1)
 
-    lda.set_train_data(D, L)
-    lda.fit()
+    lda.fit(D, L)
     six_main_components = [lda.take_n_components(i) for i in range(6)]
     six_main_projection = [
         lda.predict_custom_dir(U=component, x=D) for component in six_main_components
@@ -54,7 +49,7 @@ def analyze_lda_features():
             data,
             L,
             labels_name=labels_name,
-            title=f"LDA Feature {i+1}",
+            title=f"LDA Feature {i + 1}",
             x_label="Label Distribution",
             y_label="Frequency",
             invert_x_axis=True,
@@ -63,7 +58,7 @@ def analyze_lda_features():
 
 def classify():
     D, L = ds.load_train_project()
-    (x_train, y_train), (x_val, y_val) = ds.split_db_2to1(D, L, seed=0)
+    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(D, L, seed=0)
 
     lda = LDA(m=1)
     lda.fit(x_train, y_train)
@@ -76,7 +71,7 @@ def classify():
 
 def classify_pca_preprocess():
     D, L = ds.load_train_project()
-    (x_train, y_train), (x_val, y_val) = ds.split_db_2to1(D, L, seed=0)
+    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(D, L, seed=0)
 
     best_config = {"pca_m": 0, "lda_m": 0, "error_rate": 1.0}
 
@@ -101,10 +96,10 @@ def classify_pca_preprocess():
 
 
 def main():
-    # analyze_pca_features()
-    # analyze_lda_features()
+    analyze_pca_features()
+    analyze_lda_features()
     classify()
-    # classify_pca_preprocess()
+    classify_pca_preprocess()
 
 
 if __name__ == "__main__":

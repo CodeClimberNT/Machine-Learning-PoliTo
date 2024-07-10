@@ -1,5 +1,5 @@
-from Visualizer import Visualizer as Vis
-from helper import DatasetImporterHelper as Ds
+from src.helpers import Visualizer as Vis
+from src.helpers import DatasetImporterHelper as ds
 import numpy as np
 
 
@@ -75,7 +75,7 @@ def calculate_mean_and_variance(x: np.ndarray, save_as_txt: bool = False) -> Non
 
 
 def main(plotting: bool = False, meaning: bool = False) -> None:
-    x, y = Ds.load_train_project()
+    x, y = ds.load_train_project()
 
     labels_name: dict[int, str] = {0: 'True', 1: 'False'}
 
