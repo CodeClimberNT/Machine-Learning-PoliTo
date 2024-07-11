@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from src.helpers import MathHelper as mh
-from src.models.gaussian_models import GaussianModel as MVG
+from src.models.gaussian_models import MultivariateGaussianModel as MVG
 
 
 def maximum_likelihood_estimate(XND: np.ndarray, X1D: np.ndarray) -> None:

@@ -1,8 +1,8 @@
 import numpy as np
 
 from src.helpers import DatasetImporterHelper as dih, DataHandler as dh
-from src.models.gaussian_models import GaussianModel as MVG, NaiveBayesGaussianModel as NBG, \
-    TiedCovarianceGaussianModel as TCG
+from src.models.gaussian_models import MultivariateGaussianModel as MVG, NaiveBayesBaseGaussianModel as NBG, \
+    TiedCovarianceBaseGaussianModel as TCG
 
 
 def analyze_iris():
@@ -41,37 +41,102 @@ def display_and_compare_SJoint():
     # Display comparison results
     print(f"Max absolute error w.r.t. solution logPosterior_MVG.npy: {max_abs_error}")
 
+    predict_labels = post_prob_computed.argmax(0)
+    print(predict_labels)
+    print(f"Error rate: {(np.sum(predict_labels != y_val) / y_val.size) * 100}")
 
-def analyze_class_posterior_probabilities():
+
+def naive_analysis():
     # Load iris dataset
     x, y = dih.load_iris()
 
     # Split the dataset into training and validation sets
     (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(x, y)
 
-    # Fit a Naive Bayes Gaussian Model on the training data
-    nbg_model = NBG(x_train, y_train).fit(x_train, y_train)
+    # Analyze each class using the NaiveBayesGaussianModel class
+    nbg = NBG().fit(x_train, y_train)
 
-    # Predict class posterior probabilities for the validation set
-    # Note: The Naive Bayes model in the provided context does not directly support posterior probability prediction.
-    # We will simulate this by using the predict_proba_one method from the GaussianClassifier base class,
-    # which requires modification to return probabilities for all classes.
-    # This step assumes such a method exists or has been implemented.
-    posterior_probs = np.array([nbg_model.predict_proba_one(x_val[i], c)
-                                for i in range(x_val.shape[0])
-                                for c in range(3)]).reshape(x_val.shape[0], 3)
+    for c in nbg.classes:
+        print(f"Naive Bayes Gaussian - Class {c}")
+        print(f"mu:\n{nbg.h_params[c]['mean_']}")
+        print(f"cv:\n{nbg.h_params[c]['sigma_']}")
+        print()
 
-    # Display the posterior probabilities for each class in the validation set
-    for i in range(posterior_probs.shape[0]):
-        print(f"Sample {i + 1} posterior probabilities:")
-        for c in range(3):
-            print(f"Class {c}: {posterior_probs[i, c]:.4f}")
-        print("----------")
+    post_prob_computed = nbg.compute_log_posterior(x_val)
+
+    # Load the precomputed SJoint_MVG.npy
+    post_prob_loaded: np.ndarray = np.load('../../labs/lab05/solution/logPosterior_NaiveBayes.npy')
+
+    # Compare the computed SJoint with the loaded SJoint
+    max_abs_error = np.abs(post_prob_computed - post_prob_loaded).max()
+
+    # Display comparison results
+    print(f"Max absolute error w.r.t. solution logPosterior_NaiveBayes.npy: {max_abs_error}")
+
+    predict_labels = post_prob_computed.argmax(0)
+    print(f"Naive Bayes Gaussian - Error rate: {(np.sum(predict_labels != y_val) / y_val.size) * 100}")
+
+
+def tied_analysis():
+    # Load iris dataset
+    x, y = dih.load_iris()
+
+    # Split the dataset into training and validation sets
+    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(x, y)
+
+    # Analyze each class using the NaiveBayesGaussianModel class
+    tied_model = TCG().fit(x_train, y_train)
+
+    for c in tied_model.classes:
+        print(f"Naive Bayes Gaussian - Class {c}")
+        print(f"mu:\n{tied_model.h_params[c]['mean_']}")
+        print(f"cv:\n{tied_model.h_params[c]['sigma_']}")
+        print()
+
+    post_prob_computed = tied_model.compute_log_posterior(x_val)
+
+    # Load the precomputed SJoint_MVG.npy
+    post_prob_loaded: np.ndarray = np.load('../../labs/lab05/solution/logPosterior_TiedMVG.npy')
+
+    # Compare the computed SJoint with the loaded SJoint
+    max_abs_error = np.abs(post_prob_computed - post_prob_loaded).max()
+
+    # Display comparison results
+    print(f"Max absolute error w.r.t. solution logPosterior_TiedMVG.npy: {max_abs_error}")
+
+    predict_labels = post_prob_computed.argmax(0)
+    print(f"Naive Bayes Gaussian - Error rate: {(np.sum(predict_labels != y_val) / y_val.size) * 100}")
+
+
+def binary_task():
+    x, y = dih.load_iris()
+    x = x[:, y != 0]
+    y = y[y != 0]
+    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(x, y)
+
+    # Initialize MVG models for each class
+    mvg_model = MVG().fit(x_train, y_train)
+
+    # Compute the log likelihood ratio
+    llr = mvg_model.compute_loglikelihood_ratio(x_val)
+
+    predicted_val = np.zeros(x_val.shape[1], dtype=np.int32)
+    threshold = 0
+    predicted_val[llr >= threshold] = 2
+    predicted_val[llr < threshold] = 1
+    print(f"MVG error rate: {(np.sum(predicted_val != y_val) / y_val.size) * 100}%")
+    # Load solution and compare
+    solution_llrs = np.load('../../labs/lab05/solution/llr_MVG.npy')
+    difference = np.abs(llr - solution_llrs).max()
+    print(f"LLRs differs from the solution: {difference}")
 
 
 def main():
     # analyze_iris()
-    display_and_compare_SJoint()
+    # display_and_compare_SJoint()
+    # naive_analysis()
+    # tied_analysis()
+    binary_task()
 
 
 if __name__ == "__main__":

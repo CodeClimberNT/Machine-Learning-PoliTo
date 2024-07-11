@@ -1,5 +1,5 @@
-from .gaussian_model import GaussianModel
-from .naive_bayes_gaussian_classifier import NaiveBayesGaussianModel
-from .tied_covariance_gaussian_classifier import TiedCovarianceGaussianModel
+from .multivariate_gaussian_model import MultivariateGaussianModel
+from .naive_bayes_gaussian_classifier import NaiveBayesBaseGaussianModel
+from .tied_covariance_gaussian_classifier import TiedCovarianceBaseGaussianModel
 
-__all__ = ["GaussianModel", "NaiveBayesGaussianModel", "TiedCovarianceGaussianModel"]
+__all__ = ["MultivariateGaussianModel", "NaiveBayesBaseGaussianModel", "TiedCovarianceBaseGaussianModel"]
