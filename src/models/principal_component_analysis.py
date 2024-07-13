@@ -24,9 +24,10 @@ class PrincipalComponentAnalysis:
         self.mu = mh.v_col(np.mean(D, axis=1))
         self.num_classes = len(np.unique(L))
 
-    def fit(self, x, y) -> None:
+    def fit(self, x, y) -> 'PrincipalComponentAnalysis':
         self.set_train_data(x, y)
         self.get_m_components()
+        return self
 
     def get_m_components(self) -> np.ndarray:
         C = mh.cv_matrix(self.D)
@@ -57,3 +58,7 @@ class PrincipalComponentAnalysis:
 
     def transform(self, D: np.ndarray) -> np.ndarray:
         return np.dot(self.P.T, D)
+
+    def fit_transform(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        self.fit(x, y)
+        return self.transform(x)

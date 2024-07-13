@@ -1,0 +1,89 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global/global}
+    \entry{Hunter:2007}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=a27d092a3c70c59360ac990a48514314}{%
+           family={Hunter},
+           familyi={H\bibinitperiod},
+           given={J.\bibnamedelimi D.},
+           giveni={J\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {IEEE COMPUTER SOC}%
+      }
+      \strng{namehash}{a27d092a3c70c59360ac990a48514314}
+      \strng{fullhash}{a27d092a3c70c59360ac990a48514314}
+      \strng{fullhashraw}{a27d092a3c70c59360ac990a48514314}
+      \strng{bibnamehash}{a27d092a3c70c59360ac990a48514314}
+      \strng{authorbibnamehash}{a27d092a3c70c59360ac990a48514314}
+      \strng{authornamehash}{a27d092a3c70c59360ac990a48514314}
+      \strng{authorfullhash}{a27d092a3c70c59360ac990a48514314}
+      \strng{authorfullhashraw}{a27d092a3c70c59360ac990a48514314}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Matplotlib is a 2D graphics package used for Python for application development, interactive scripting, and publication-quality image generation across user interfaces and operating systems.}
+      \field{journaltitle}{Computing in Science \& Engineering}
+      \field{number}{3}
+      \field{title}{Matplotlib: A 2D graphics environment}
+      \field{volume}{9}
+      \field{year}{2007}
+      \field{pages}{90\bibrangedash 95}
+      \range{pages}{6}
+      \verb{doi}
+      \verb 10.1109/MCSE.2007.55
+      \endverb
+    \endentry
+    \entry{nickrepository}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=1f2ca0b8016c615c20611ab667523071}{%
+           family={Taormina},
+           familyi={T\bibinitperiod},
+           given={Nicolò},
+           giveni={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{1f2ca0b8016c615c20611ab667523071}
+      \strng{fullhash}{1f2ca0b8016c615c20611ab667523071}
+      \strng{fullhashraw}{1f2ca0b8016c615c20611ab667523071}
+      \strng{bibnamehash}{1f2ca0b8016c615c20611ab667523071}
+      \strng{authorbibnamehash}{1f2ca0b8016c615c20611ab667523071}
+      \strng{authornamehash}{1f2ca0b8016c615c20611ab667523071}
+      \strng{authorfullhash}{1f2ca0b8016c615c20611ab667523071}
+      \strng{authorfullhashraw}{1f2ca0b8016c615c20611ab667523071}
+      \field{sortinit}{T}
+      \field{sortinithash}{9af77f0292593c26bde9a56e688eaee9}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Machine-Learning-PoliTo GitHub Repository}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://github.com/CodeClimberNT/Machine-Learning-PoliTo
+      \endverb
+      \verb{url}
+      \verb https://github.com/CodeClimberNT/Machine-Learning-PoliTo
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

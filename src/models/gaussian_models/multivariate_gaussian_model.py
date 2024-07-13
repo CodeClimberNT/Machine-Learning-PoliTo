@@ -1,13 +1,11 @@
 from typing import Optional
 import numpy as np
-import scipy
 
 from src.helpers import MathHelper as mh
-from src.models.gaussian_models.gaussian_utils import GaussianUtils
-from src.models.base_model import BaseModel
+from src.models.gaussian_models.base_gaussian_model import BaseGaussianModel
 
 
-class MultivariateGaussianModel(BaseModel):
+class MultivariateGaussianModel(BaseGaussianModel):
     """
     Multivariate Gaussian (MVG) class to represent and compute properties
     of a multivariate normal distribution.
@@ -28,20 +26,21 @@ class MultivariateGaussianModel(BaseModel):
         Precomputed constant part of the log PDF equation.
     """
 
-    def __init__(self, *, mu: np.ndarray = None, sigma: np.ndarray = None):
+    def __init__(
+        self, *, mu: np.ndarray | None = None, sigma: np.ndarray | None = None
+    ) -> None:
         super().__init__()
-        self.utils = GaussianUtils()
         self.h_params = {}
-        self.mu_: np.ndarray = mu
-        self.sigma_: np.ndarray = sigma
-        self.inv_sigma_: np.ndarray = self.utils.inv_matrix(sigma)
+        self.mu_: np.ndarray | None = mu
+        self.sigma_: np.ndarray | None = sigma
+        self.inv_sigma_: np.ndarray | None = self.utils.inv_matrix(sigma)
         self.M_: int = 0 if mu is None else len(mu)
-        self.log_det_sigma_: float = self.utils.log_det_matrix(sigma)
+        self.log_det_sigma_: float | None = self.utils.log_det_matrix(sigma)
         self.const_: Optional[float] = None
         if mu is not None and sigma is not None:
-            self._calculate_const()
+            self._calculate_constant_part()
 
-    def fit(self, X: np.ndarray, y: np.ndarray = None) -> 'MultivariateGaussianModel':
+    def fit(self, X: np.ndarray, y: np.ndarray = None) -> "MultivariateGaussianModel":  # type: ignore
         """
         Fit the MVG model to the data in X and computes the mean vector
         and covariance matrix.
@@ -57,15 +56,13 @@ class MultivariateGaussianModel(BaseModel):
         super().fit(X, y)
 
         self.mu_, self.sigma_ = self.utils.compute_mu_and_sigma(X)
-        if self.sigma_.ndim == 1:
-            self.sigma_ = np.diag(self.sigma_)
+        # if self.sigma_.ndim == 1:
+        #     self.sigma_ = np.diag(self.sigma_)
         self.inv_sigma_ = self.utils.inv_matrix(self.sigma_)
         self.M_ = len(self.mu_)
         self.log_det_sigma_ = self.utils.log_det_matrix(self.sigma_)
-        self._calculate_const()
-        for c in self.classes:
-            mu_, cov_ = self.utils.compute_mu_and_sigma(X[:, self.y_train == c])
-            self.h_params[c] = {'mean_': mu_, 'sigma_': cov_}
+        self._calculate_constant_part()
+        self._calculate_h_params(X)
 
         return self
 
@@ -84,6 +81,11 @@ class MultivariateGaussianModel(BaseModel):
             The log probability densities.
         """
         return self.logpdf_GAU_ND(X).sum()
+
+    def _calculate_h_params(self, X):
+        for c in self.classes:
+            mu_, cov_ = self.utils.compute_mu_and_sigma(X[:, self.y == c])
+            self.h_params[c] = {"mean_": mu_, "sigma_": cov_}
 
     def pdf_GAU_ND(self, X: np.ndarray) -> np.ndarray:
         """
@@ -118,7 +120,7 @@ class MultivariateGaussianModel(BaseModel):
         if isinstance(X, (int, float)):
             X = np.array([[X]])
 
-        result = [self._logpdf_GAU_ND(X[:, i:i + 1]) for i in range(X.shape[1])]
+        result = [self._logpdf_GAU_ND(X[:, i : i + 1]) for i in range(X.shape[1])]
         return np.array(result).ravel()
 
     def _logpdf_GAU_ND(self, x: np.ndarray) -> np.ndarray:
@@ -138,79 +140,17 @@ class MultivariateGaussianModel(BaseModel):
         x = mh.v_col(x)
         x_mu = x - self.mu_
         exponent = -0.5 * (x_mu.T @ self.inv_sigma_ @ x_mu).ravel()
+
+        if self.const_ is None:
+            raise ValueError(
+                "The constant part of the log PDF equation is not computed."
+            )
         return self.const_ + exponent
 
-    def _calculate_const(self) -> None:
+    def _calculate_constant_part(self) -> None:
         """
         Calculate the constant part of the log PDF equation.
         """
+        if self.log_det_sigma_ is None:
+            raise ValueError("The covariance matrix is singular.")
         self.const_ = -0.5 * self.M_ * np.log(2 * np.pi) - 0.5 * self.log_det_sigma_
-
-    def compute_log_likelihood(self, X_val: np.ndarray) -> np.ndarray:
-        S = np.zeros((self.num_classes, X_val.shape[1]))
-        for c in range(self.num_classes):
-            S[c, :] = self.utils.calculate_probability_distribution(X_val, self.h_params[c]["mean_"],
-                                                                    self.h_params[c]["sigma_"])
-        return S
-
-    def compute_log_posterior(self, X: np.ndarray) -> np.ndarray:
-        """
-        Compute the matrix of joint densities SJoint for all test samples and classes.
-
-        Parameters:
-        ----------
-        X_test : np.ndarray
-            Test dataset.
-
-        Returns:
-        -------
-        np.ndarray
-            The matrix of joint densities SJoint.
-        """
-        log_likelihood = self.compute_log_likelihood(X)
-        S_joint = MultivariateGaussianModel.compute_SJoint(log_likelihood,
-                                                           np.ones(self.num_classes) / float(self.num_classes))
-        S_marginal = mh.v_row(scipy.special.logsumexp(S_joint, axis=0))
-        return S_joint - S_marginal
-
-    @staticmethod
-    def compute_SJoint(log_likelihood, prior_prob) -> np.ndarray:
-        return log_likelihood + mh.v_col(np.log(prior_prob))
-
-    def score(self, X: np.ndarray, y: np.ndarray) -> float:
-        """
-        Compute the mean accuracy of the MVG model.
-
-        Parameters:
-        ----------
-        X : np.ndarray
-            Data to predict.
-        y : np.ndarray
-            Target values.
-
-        Returns:
-        -------
-        float
-            Mean accuracy of the MVG model.
-        """
-        return np.mean(self.predict(X) == y)
-
-    def compute_loglikelihood_ratio(self, X: np.ndarray) -> np.ndarray:
-        """
-        Compute the log likelihood ratio for the given data.
-
-        Parameters:
-        ----------
-        X : np.ndarray
-            Data for which to compute the log likelihood ratio.
-
-        Returns:
-        -------
-        np.ndarray
-            The log likelihood ratio.
-        """
-        for c in np.unique(self.y_train):
-            self.h_params[c]["probability_"] = self.utils.calculate_probability_distribution(X,
-                                                                                             self.h_params[c]["mean_"],
-                                                                                             self.h_params[c]["sigma_"])
-        return self.h_params[2]["probability_"] - self.h_params[1]["probability_"]

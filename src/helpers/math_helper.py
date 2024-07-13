@@ -54,3 +54,11 @@ class MathHelper:
     @staticmethod
     def var(matrix: np.ndarray, axis: int = 1) -> np.ndarray:
         return np.var(matrix, axis=axis)
+
+    @staticmethod
+    def pearson_correlation_numpy(matrix: np.ndarray) -> np.ndarray:
+        return np.corrcoef(matrix)
+
+    @staticmethod
+    def pearson_correlation_homemade(matrix: np.ndarray) -> np.ndarray:
+        return matrix / (MathHelper.v_col(matrix.diagonal() ** 0.5) * MathHelper.v_row(matrix.diagonal() ** 0.5))

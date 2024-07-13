@@ -80,8 +80,7 @@ def classify_pca_preprocess():
         pca.fit(x_train, y_train)
         x_train_pca = pca.transform(x_train)
         x_val_pca = pca.transform(x_val)
-        lda = LDA(m=1)
-        lda.fit(x_train_pca, y_train)
+        lda = LDA(m=1).fit(x_train_pca, y_train)
         # lda.optimize_threshold(steps=1000)
         print(f"PCA with m = {i} components")
         _, error_rate = lda.validate(x_val_pca, y_val=y_val)
@@ -96,9 +95,9 @@ def classify_pca_preprocess():
 
 
 def main():
-    analyze_pca_features()
-    analyze_lda_features()
-    classify()
+    # analyze_pca_features()
+    # analyze_lda_features()
+    # classify()
     classify_pca_preprocess()
 
 

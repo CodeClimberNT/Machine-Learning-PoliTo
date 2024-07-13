@@ -19,12 +19,12 @@
 \usepackage{xcolor}% http://ctan.org/pkg/xcolor
 \usepackage{xparse}% http://ctan.org/pkg/xparse
 \NewDocumentCommand{\myrule}{O{1pt} O{2pt} O{black}}{%
-    \par\nobreak % don't break a page here
-    \kern\the\prevdepth % don't take into account the depth of the preceding line
+    \par\nobreak% don't break a page here
+    \kern\the\prevdepth% don't take into account the depth of the preceding line
     \kern#2 % space before the rule
         {\color{#3}\hrule height #1 width\hsize} % the rule
     \kern#2 % space after the rule
-    \nointerlineskip % no additional space after the rule
+    \nointerlineskip% no additional space after the rule
 }
 
 

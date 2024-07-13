@@ -1,5 +1,5 @@
 import os
-from pathlib import Path
+from typing import Optional
 import numpy as np
 
 
@@ -7,41 +7,49 @@ class DatasetImporterHelper:
     @staticmethod
     def load_iris():
         import sklearn.datasets as datasets
+
         iris_dataset = datasets.load_iris()
         x, y = iris_dataset["data"].T, iris_dataset["target"]
 
         return x, y
 
     @staticmethod
-    def load_train_project():
+    def load_train_project(split_train_val: bool = False):
         current_file_path: str = os.path.abspath(__file__)
-        project_root: str = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
-        train_data_path: str = os.path.join(project_root, 'datasets', 'project', 'trainData.txt')
+        project_root: str = os.path.dirname(
+            os.path.dirname(os.path.dirname(current_file_path))
+        )
+        train_data_path: str = os.path.join(
+            project_root, "datasets", "project", "trainData.txt"
+        )
 
         if DatasetImporterHelper.file_exists(train_data_path):
-            return DatasetImporterHelper.load_txt(
-                train_data_path, features_type=float
-            )
+            x, y = DatasetImporterHelper.load_txt(train_data_path, features_type=float)
+            if split_train_val:
+                from src.helpers import DataHandler as dh
+
+                return dh.split_db_2to1(x, y)
+            return x, y
         else:
-            print("File not found")
-            return None
+            raise FileNotFoundError(f"File not found: {train_data_path}")
 
     @staticmethod
     def load_txt(
-            file_path: str,
-            sep: str = ",",
-            labels_need_map: bool = False,
-            labels_map: dict[str | int, int] = None,
-            features_type: type = float,
-            labels_type: type = np.int32,
+        file_path: str,
+        sep: str = ",",
+        labels_need_map: bool = False,
+        labels_map: Optional[dict[str | int, int]] = None,
+        features_type: type = float,
+        labels_type: type = np.int32,
     ) -> tuple[np.ndarray, np.ndarray]:
         from src.helpers import MathHelper
+
         data_list: list = []
         labels_list: list = []
 
         if labels_map is None and labels_need_map:
             print("Using default labels map for Iris dataset")
-            labels_map: dict[str | int, int] = {
+            labels_map = {
                 "Iris-setosa": 0,
                 "Iris-versicolor": 1,
                 "Iris-virginica": 2,
@@ -58,7 +66,7 @@ class DatasetImporterHelper:
 
                     label = line.split(sep)[-1].strip()
 
-                    if labels_need_map:
+                    if labels_need_map and labels_map is not None:
                         label = labels_map[label]
 
                     labels_list.append(label)
@@ -71,28 +79,62 @@ class DatasetImporterHelper:
         )
 
     @staticmethod
-    @DeprecationWarning
-    def load_txt_with_np(
-            file_path: str,
-            delimiter: str = ",",
-            features_type: type = float,
-            labels_type: type = float,
-            return_labels_in_data_matrix: bool = False,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    def load_div_commedia(
+        split_data: bool = False, n=0
+    ) -> tuple[list[str], list[str], list[str]]:
 
-        # Load the array from the text file and convert all but last column to float
-        data = np.loadtxt(file_path, delimiter=delimiter, dtype=features_type)
+        current_file_path: str = os.path.abspath(__file__)
+        project_root: str = os.path.dirname(
+            os.path.dirname(os.path.dirname(current_file_path))
+        )
+        inferno_path: str = os.path.join(
+            project_root, "datasets", "generative", "div_comm", "inferno.txt"
+        )
+        purgatorio_path: str = os.path.join(
+            project_root, "datasets", "generative", "div_comm", "purgatorio.txt"
+        )
+        paradiso_path: str = os.path.join(
+            project_root, "datasets", "generative", "div_comm", "paradiso.txt"
+        )
+        l_inf = []
+        l_pur = []
+        l_par = []
 
-        if return_labels_in_data_matrix:
-            x = data
-        else:
-            # Extract features (all but last column)
-            x = data[:, :-1]
+        paths = [inferno_path, purgatorio_path, paradiso_path]
+        div_commedia = (l_inf, l_pur, l_par)
 
-        # Extract labels (last column)
-        y = data[:, -1].astype(labels_type)
+        for i, path in enumerate(paths):
+            if DatasetImporterHelper.file_exists(path):
+                with open(path, "r", encoding="ISO-8859-1") as f:
+                    for lines in f:
+                        div_commedia[i].append(lines)
+            else:
+                raise FileNotFoundError(f"File not found: {path}")
 
-        return x, y
+        return div_commedia
+
+    # @staticmethod
+    # def load_txt_with_np(
+    #         file_path: str,
+    #         delimiter: str = ",",
+    #         features_type: type = float,
+    #         labels_type: type = float,
+    #         return_labels_in_data_matrix: bool = False,
+    # ) -> tuple[np.ndarray, np.ndarray]:
+
+    #     # Load the array from the text file and convert all but last column to float
+    #     data = np.loadtxt(file_path, delimiter=delimiter, dtype=features_type)
+
+    #     if return_labels_in_data_matrix:
+    #         x = data
+    #     else:
+    #         # Extract features (all but last column)
+    #         x = data[:, :-1]
+
+    #     # Extract labels (last column)
+    #     y = data[:, -1].astype(labels_type)
+
+    #     return x, y
 
     @staticmethod
     def file_exists(file_path):

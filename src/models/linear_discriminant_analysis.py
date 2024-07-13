@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import numpy as np
 import scipy.linalg
 
@@ -6,6 +8,14 @@ from src.helpers import MathHelper as mh
 
 class LinearDiscriminantAnalysis:
     def __init__(self, solver: str = "svd", m: int = 2):
+        self.num_classes = None
+        self.labels = None
+        self.mu = None
+        self.y = None
+        self.m = None
+        self.x = None
+        self.solver = None
+        self.threshold = None
         self.set_solver(solver)
         self.set_dimensions(m)
         self.last_predicted = None
@@ -18,8 +28,9 @@ class LinearDiscriminantAnalysis:
             self.solver = solver
         return self
 
-    def get_valid_solver(self) -> tuple[str]:
-        return ("svd", "eigh")
+    @staticmethod
+    def get_valid_solver() -> tuple[str, str]:
+        return "svd", "eigh"
 
     def set_dimensions(self, m: int) -> None:
         self.m = m
@@ -35,11 +46,12 @@ class LinearDiscriminantAnalysis:
         self.labels = list(np.unique(y))
         self.num_classes = len(np.unique(y))
 
-    def fit(self, x, y) -> None:
+    def fit(self, x, y) -> 'LinearDiscriminantAnalysis':
         self.set_train_data(x, y)
         self.solve()
         self.get_projected_matrix()
         self.calculate_threshold()
+        return self
 
     def _compute_SB(self) -> np.ndarray:
         Sb = 0
@@ -152,10 +164,10 @@ class LinearDiscriminantAnalysis:
             *,
             threshold: float = None,
             show_results: bool = False,
-    ) -> np.ndarray:
+    ) -> tuple[np.ndarray, float]:
 
         if threshold:
-            return self.validate_custom_threshold(x_val, threshold, show_results, y_val)
+            return self.validate_custom_threshold(x_val, y_val, threshold=threshold, show_results=show_results)
 
         if hasattr(self, "W") is False:
             raise ValueError("W is not set. Run fit method first")
@@ -169,7 +181,7 @@ class LinearDiscriminantAnalysis:
         if show_results and y_val is not None:
             self.show_error_rate(predicted, y_val, error_rate)
 
-        return (predicted, error_rate)
+        return predicted, error_rate
 
     def validate_custom_threshold(
             self,
@@ -178,7 +190,7 @@ class LinearDiscriminantAnalysis:
             *,
             threshold: float = None,
             show_results: bool = False,
-    ) -> np.ndarray:
+    ) -> tuple[np.ndarray, float]:
         if hasattr(self, "W") is False:
             raise ValueError("W is not set. Run fit method first")
 
@@ -194,7 +206,7 @@ class LinearDiscriminantAnalysis:
         if show_results and y_val is not None:
             self.show_error_rate(predicted, y_val, error_rate)
 
-        return (predicted, error_rate)
+        return predicted, error_rate
 
     def __get_predicted(self, x_val: np.ndarray, threshold: float) -> np.ndarray:
         projected = self.transform(x_val)

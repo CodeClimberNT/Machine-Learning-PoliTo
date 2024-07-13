@@ -1,8 +1,16 @@
 import numpy as np
+import os
 
 from src.helpers import DatasetImporterHelper as dih, DataHandler as dh
-from src.models.gaussian_models import MultivariateGaussianModel as MVG, NaiveBayesBaseGaussianModel as NBG, \
-    TiedCovarianceBaseGaussianModel as TCG
+from src.models.gaussian_models import (
+    MultivariateGaussianModel as MVG,
+    NaiveBayesBaseGaussianModel as NBG,
+    TiedCovarianceBaseGaussianModel as TCG,
+)
+
+current_file_path: str = os.path.abspath(__file__)
+project_root: str = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))
+SOLUTION_FOLDER: str = os.path.join(project_root, "labs", "lab05", "solution")
 
 
 def analyze_iris():
@@ -30,10 +38,11 @@ def display_and_compare_SJoint():
     mvg: MVG = MVG().fit(x_train, y_train)
 
     # Compute SJoint for the validation set
-    post_prob_computed: np.ndarray = mvg.compute_log_posterior(x_val)
+    post_prob_computed: np.ndarray = mvg.compute_log_posteriors(x_val)
 
     # Load the precomputed SJoint_MVG.npy
-    post_prob_loaded: np.ndarray = np.load('../../labs/lab05/solution/logPosterior_MVG.npy')
+    solution_file_path = os.path.join(SOLUTION_FOLDER, "logPosterior_MVG.npy")
+    post_prob_loaded: np.ndarray = np.load(solution_file_path)
 
     # Compare the computed SJoint with the loaded SJoint
     max_abs_error = np.abs(post_prob_computed - post_prob_loaded).max()
@@ -42,7 +51,7 @@ def display_and_compare_SJoint():
     print(f"Max absolute error w.r.t. solution logPosterior_MVG.npy: {max_abs_error}")
 
     predict_labels = post_prob_computed.argmax(0)
-    print(predict_labels)
+    # print(predict_labels)
     print(f"Error rate: {(np.sum(predict_labels != y_val) / y_val.size) * 100}")
 
 
@@ -56,25 +65,30 @@ def naive_analysis():
     # Analyze each class using the NaiveBayesGaussianModel class
     nbg = NBG().fit(x_train, y_train)
 
-    for c in nbg.classes:
-        print(f"Naive Bayes Gaussian - Class {c}")
-        print(f"mu:\n{nbg.h_params[c]['mean_']}")
-        print(f"cv:\n{nbg.h_params[c]['sigma_']}")
-        print()
+    # for c in nbg.classes:
+    #     print(f"Naive Bayes Gaussian - Class {c}")
+    #     print(f"mu:\n{nbg.h_params[c]['mean_']}")
+    #     print(f"cv:\n{nbg.h_params[c]['sigma_']}")
+    #     print()
 
-    post_prob_computed = nbg.compute_log_posterior(x_val)
+    post_prob_computed = nbg.compute_log_posteriors(x_val)
 
     # Load the precomputed SJoint_MVG.npy
-    post_prob_loaded: np.ndarray = np.load('../../labs/lab05/solution/logPosterior_NaiveBayes.npy')
+    solution_file_path = os.path.join(SOLUTION_FOLDER, "logPosterior_NaiveBayes.npy")
+    post_prob_loaded: np.ndarray = np.load(solution_file_path)
 
     # Compare the computed SJoint with the loaded SJoint
     max_abs_error = np.abs(post_prob_computed - post_prob_loaded).max()
 
     # Display comparison results
-    print(f"Max absolute error w.r.t. solution logPosterior_NaiveBayes.npy: {max_abs_error}")
+    print(
+        f"Max absolute error w.r.t. solution logPosterior_NaiveBayes.npy: {max_abs_error}"
+    )
 
     predict_labels = post_prob_computed.argmax(0)
-    print(f"Naive Bayes Gaussian - Error rate: {(np.sum(predict_labels != y_val) / y_val.size) * 100}")
+    print(
+        f"Naive Bayes Gaussian - Error rate: {(np.sum(predict_labels != y_val) / y_val.size) * 100}"
+    )
 
 
 def tied_analysis():
@@ -87,25 +101,30 @@ def tied_analysis():
     # Analyze each class using the NaiveBayesGaussianModel class
     tied_model = TCG().fit(x_train, y_train)
 
-    for c in tied_model.classes:
-        print(f"Naive Bayes Gaussian - Class {c}")
-        print(f"mu:\n{tied_model.h_params[c]['mean_']}")
-        print(f"cv:\n{tied_model.h_params[c]['sigma_']}")
-        print()
+    # for c in tied_model.classes:
+    #     print(f"Naive Bayes Gaussian - Class {c}")
+    #     print(f"mu:\n{tied_model.h_params[c]['mean_']}")
+    #     print(f"cv:\n{tied_model.h_params[c]['sigma_']}")
+    #     print()
 
-    post_prob_computed = tied_model.compute_log_posterior(x_val)
+    post_prob_computed = tied_model.compute_log_posteriors(x_val)
 
     # Load the precomputed SJoint_MVG.npy
-    post_prob_loaded: np.ndarray = np.load('../../labs/lab05/solution/logPosterior_TiedMVG.npy')
+    solution_file_path = os.path.join(SOLUTION_FOLDER, "logPosterior_TiedMVG.npy")
+    post_prob_loaded: np.ndarray = np.load(solution_file_path)
 
     # Compare the computed SJoint with the loaded SJoint
     max_abs_error = np.abs(post_prob_computed - post_prob_loaded).max()
 
     # Display comparison results
-    print(f"Max absolute error w.r.t. solution logPosterior_TiedMVG.npy: {max_abs_error}")
+    print(
+        f"Max absolute error w.r.t. solution logPosterior_TiedMVG.npy: {max_abs_error}"
+    )
 
     predict_labels = post_prob_computed.argmax(0)
-    print(f"Naive Bayes Gaussian - Error rate: {(np.sum(predict_labels != y_val) / y_val.size) * 100}")
+    print(
+        f"Naive Bayes Gaussian - Error rate: {(np.sum(predict_labels != y_val) / y_val.size) * 100}"
+    )
 
 
 def binary_task():
@@ -118,7 +137,7 @@ def binary_task():
     mvg_model = MVG().fit(x_train, y_train)
 
     # Compute the log likelihood ratio
-    llr = mvg_model.compute_loglikelihood_ratio(x_val)
+    llr = mvg_model.log_likelihood_ratio(x_val)
 
     predicted_val = np.zeros(x_val.shape[1], dtype=np.int32)
     threshold = 0
@@ -126,16 +145,18 @@ def binary_task():
     predicted_val[llr < threshold] = 1
     print(f"MVG error rate: {(np.sum(predicted_val != y_val) / y_val.size) * 100}%")
     # Load solution and compare
-    solution_llrs = np.load('../../labs/lab05/solution/llr_MVG.npy')
+    solution_file_path = os.path.join(SOLUTION_FOLDER, "llr_MVG.npy")
+    solution_llrs: np.ndarray = np.load(solution_file_path)
     difference = np.abs(llr - solution_llrs).max()
     print(f"LLRs differs from the solution: {difference}")
 
 
 def main():
-    # analyze_iris()
-    # display_and_compare_SJoint()
-    # naive_analysis()
-    # tied_analysis()
+    print(SOLUTION_FOLDER)
+    analyze_iris()
+    display_and_compare_SJoint()
+    naive_analysis()
+    tied_analysis()
     binary_task()
 
 

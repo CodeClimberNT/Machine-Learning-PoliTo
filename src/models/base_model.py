@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from typing import TypeVar, Generic
+from typing import Optional, TypeVar, Generic
 
-T = TypeVar("T", bound='BaseModel')
+T = TypeVar("T", bound="BaseModel")
 
 
 class BaseModel(ABC, Generic[T]):
@@ -15,14 +15,12 @@ class BaseModel(ABC, Generic[T]):
         """
         Initialize the BaseModel with an empty list of classes.
         """
-        self.classes = []
+        self.classes: np.ndarray = np.array([])
         self.num_classes = 0
-        self.x_train = None
-        self.y_train = None
-        self.x_val = None
-        self.y_val = None
+        self.X = None
+        self.y = None
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> T:
+    def fit(self, X: np.ndarray, y: Optional[np.ndarray]) -> "BaseModel[T]":
         """
         Fit the model to the data. This method calculates and stores the unique classes
         from the `y` parameter, if provided.
@@ -30,11 +28,11 @@ class BaseModel(ABC, Generic[T]):
         :param X: Feature dataset as a NumPy array.
         :param y: Labels as a NumPy array. Optional, default is None.
         """
-        self.x_train = X
+        self.X = X
         if y is not None:
-            self.y_train = y
+            self.y = y
             self.classes = np.unique(y)
-            self.num_classes = len(self.classes)
+            self.num_classes: int = len(self.classes)
         return self
 
     @abstractmethod
