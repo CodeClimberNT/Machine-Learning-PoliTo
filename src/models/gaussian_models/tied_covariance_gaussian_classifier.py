@@ -1,15 +1,12 @@
 from typing import Optional
 import numpy as np
-import scipy
 
-from src.helpers import MathHelper as mh
 from src.models.gaussian_models.base_gaussian_model import BaseGaussianModel
 
 
 class TiedCovarianceBaseGaussianModel(BaseGaussianModel):
     def __init__(self):
         super().__init__()
-        self.class_models: dict = {}
         self.shared_sigma_ = 0
         self.h_params = {}
 
@@ -29,5 +26,4 @@ class TiedCovarianceBaseGaussianModel(BaseGaussianModel):
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
-        raise NotImplementedError("Method predict is not implemented.")
-
+        return super().compute_class_posteriors(X, self.h_params)

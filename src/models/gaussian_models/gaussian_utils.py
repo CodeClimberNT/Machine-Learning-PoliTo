@@ -1,7 +1,9 @@
+from typing import Optional
 import numpy as np
 import scipy.special
 
 from src.helpers import MathHelper as mh
+
 
 
 class GaussianUtils:
@@ -49,11 +51,11 @@ class GaussianUtils:
 
     @staticmethod
     def compute_SJoint(
-        log_likelihood, prior_prob, is_prior_log: bool = False
+        log_likelihood, prior_prob, prob_is_log: bool = False
     ) -> np.ndarray:
-        if not is_prior_log:
-            return log_likelihood + mh.v_col(np.log(prior_prob))
-        return log_likelihood + mh.v_col(prior_prob)
+        if prob_is_log:
+            return log_likelihood + mh.v_col(prior_prob)
+        return log_likelihood + mh.v_col(np.log(prior_prob))
 
     @staticmethod
     def compute_log_marginal(
@@ -79,20 +81,41 @@ class GaussianUtils:
         return S
 
     @staticmethod
-    def compute_log_posteriors(X_val, h_params: dict, log_prior=None) -> np.ndarray:
+    def compute_log_posteriors(
+        X_val: np.ndarray, h_params: dict, log_prior: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         if log_prior is None:
             log_prior = GaussianUtils.compute_log_prior(len(h_params))
 
         log_likelihood = GaussianUtils.compute_log_likelihood(X_val, h_params)
         joint = GaussianUtils.compute_SJoint(
-            log_likelihood, log_prior, is_prior_log=True
+            log_likelihood, log_prior, prob_is_log=True
         )
         marginal = GaussianUtils.compute_log_marginal(joint)
         return joint - marginal
 
     @staticmethod
-    def compute_class_posteriors(X_val, h_params: dict, log_prior=None) -> np.ndarray:
+    def compute_posteriors(
+        X_val: np.ndarray, h_params: dict, log_prior=None
+    ) -> np.ndarray:
         return np.exp(GaussianUtils.compute_log_posteriors(X_val, h_params, log_prior))
+
+    @staticmethod
+    def compute_log_posteriors_from_prob(
+        log_cls_prob: np.ndarray, log_prior: Optional[np.ndarray] = None
+    ) -> np.ndarray:
+        if log_prior is None:
+            log_prior = GaussianUtils.compute_log_prior(log_cls_prob.shape[0])
+
+        joint = GaussianUtils.compute_SJoint(log_cls_prob, log_prior, prob_is_log=True)
+        marginal = GaussianUtils.compute_log_marginal(joint)
+        return joint - marginal
+
+    @staticmethod
+    def compute_posteriors_from_prob(
+        log_cls_prob: np.ndarray, log_prior=None
+    ) -> np.ndarray:
+        return np.exp(GaussianUtils.compute_log_posteriors_from_prob(log_cls_prob, log_prior))
 
     @staticmethod
     def compute_error_rate(

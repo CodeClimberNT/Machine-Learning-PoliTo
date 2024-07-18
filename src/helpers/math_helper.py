@@ -61,4 +61,7 @@ class MathHelper:
 
     @staticmethod
     def pearson_correlation_homemade(matrix: np.ndarray) -> np.ndarray:
-        return matrix / (MathHelper.v_col(matrix.diagonal() ** 0.5) * MathHelper.v_row(matrix.diagonal() ** 0.5))
+        return matrix / (
+            MathHelper.v_col(matrix.diagonal() ** 0.5)
+            * MathHelper.v_row(matrix.diagonal() ** 0.5)
+        )

@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
 import numpy as np
-from typing import Optional, TypeVar, Generic
-
-T = TypeVar("T", bound="BaseModel")
+from typing import Optional, Self
 
 
-class BaseModel(ABC, Generic[T]):
+class BaseModel(ABC):
     """
     An abstract base class for models, providing a template for fitting models to data,
     making predictions, and calculating accuracy.
@@ -20,7 +18,7 @@ class BaseModel(ABC, Generic[T]):
         self.X = None
         self.y = None
 
-    def fit(self, X: np.ndarray, y: Optional[np.ndarray]) -> "BaseModel[T]":
+    def fit(self, X: np.ndarray, y: Optional[np.ndarray]) -> Self:
         """
         Fit the model to the data. This method calculates and stores the unique classes
         from the `y` parameter, if provided.
@@ -55,6 +53,6 @@ class BaseModel(ABC, Generic[T]):
         :param y: True labels as a NumPy array.
         :return: Accuracy score as a float.
         """
-        predictions = self.predict(X)
-        accuracy = np.mean(predictions == y)
-        return accuracy
+        predictions = np.argmax(self.predict(X), axis=0)
+        num_correct = np.sum((predictions.ravel() == y.ravel()) / y.ravel())
+        return float(num_correct) / y.size

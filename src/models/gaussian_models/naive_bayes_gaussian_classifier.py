@@ -1,9 +1,7 @@
 from typing import Optional
 import numpy as np
-import scipy
 
 from src.models.gaussian_models.base_gaussian_model import BaseGaussianModel
-from src.helpers import MathHelper as mh
 
 
 class NaiveBayesBaseGaussianModel(BaseGaussianModel):
@@ -17,8 +15,7 @@ class NaiveBayesBaseGaussianModel(BaseGaussianModel):
         self, X: np.ndarray, y: Optional[np.ndarray] = None
     ) -> "NaiveBayesBaseGaussianModel":
         super().fit(X, y)  # Utilize the fit method from BaseModel to set classes
-        self.X = X
-        self.y = y
+
         for c in self.classes:
             # Filter data for each class and fit a MultivariateGaussianModel
             class_data = X[:, y == c]

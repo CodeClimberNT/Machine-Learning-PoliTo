@@ -67,20 +67,7 @@ class MultivariateGaussianModel(BaseGaussianModel):
         return self
 
     def predict(self, X: np.ndarray) -> np.ndarray:
-        """
-        Predict the log probability density for the given data.
-
-        Parameters:
-        ----------
-        X : np.ndarray
-            Data for which to predict the log probability density.
-
-        Returns:
-        -------
-        np.ndarray
-            The log probability densities.
-        """
-        return self.logpdf_GAU_ND(X).sum()
+        raise NotImplementedError("Method predict not implemented")
 
     def _calculate_h_params(self, X):
         for c in self.classes:

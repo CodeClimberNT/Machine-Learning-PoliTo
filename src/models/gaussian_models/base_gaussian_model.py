@@ -45,7 +45,7 @@ class BaseGaussianModel(BaseModel):
         self, log_likelihood, prior_prob, is_prior_log: bool = False
     ) -> np.ndarray:
         return self.utils.compute_SJoint(
-            log_likelihood, prior_prob, is_prior_log=is_prior_log
+            log_likelihood, prior_prob, prob_is_log=is_prior_log
         )
 
     def compute_log_marginal(
