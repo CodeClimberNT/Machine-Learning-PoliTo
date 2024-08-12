@@ -19,7 +19,7 @@ from src.models import (
 
 
 def apply_mvg_model(features_to_remove: list | None = None):
-    (x_train, y_train), (x_val, y_val) = dih.load_train_project(split_train_val=True)
+    (x_train, y_train), (x_val, y_val) = dih.load_train_project_splitted()
     if features_to_remove:
         x_train = dh.remove_features(x_train, features_to_remove)
         x_val = dh.remove_features(x_val, features_to_remove)
@@ -30,7 +30,7 @@ def apply_mvg_model(features_to_remove: list | None = None):
 
 
 def apply_tied_model(features_to_remove: list | None = None):
-    (x_train, y_train), (x_val, y_val) = dih.load_train_project(split_train_val=True)
+    (x_train, y_train), (x_val, y_val) = dih.load_train_project_splitted()
     if features_to_remove:
         x_train = dh.remove_features(x_train, features_to_remove)
         x_val = dh.remove_features(x_val, features_to_remove)
@@ -42,7 +42,7 @@ def apply_tied_model(features_to_remove: list | None = None):
 
 
 def apply_mvg_lda_model(features_to_remove: list | None = None):
-    (x_train, y_train), (x_val, y_val) = dih.load_train_project(split_train_val=True)
+    (x_train, y_train), (x_val, y_val) = dih.load_train_project_splitted()
     if features_to_remove:
         x_train = dh.remove_features(x_train, features_to_remove)
         x_val = dh.remove_features(x_val, features_to_remove)
@@ -59,7 +59,7 @@ def apply_mvg_lda_model(features_to_remove: list | None = None):
 
 
 def apply_naive_model(features_to_remove: list | None = None):
-    (x_train, y_train), (x_val, y_val) = dih.load_train_project(split_train_val=True)
+    (x_train, y_train), (x_val, y_val) = dih.load_train_project_splitted()
     if features_to_remove:
         x_train = dh.remove_features(x_train, features_to_remove)
         x_val = dh.remove_features(x_val, features_to_remove)
@@ -82,7 +82,7 @@ def compare_models():
 
 
 def analyze_cov_matrices():
-    (x_train, y_train), (x_val, y_val) = dih.load_train_project(split_train_val=True)
+    (x_train, y_train), (x_val, y_val) = dih.load_train_project_splitted()
     mvg_model = MVG().fit(x_train, y_train)
     for c in mvg_model.classes:
         print(f"Class {c}")
@@ -96,7 +96,7 @@ def analyze_cov_matrices():
 
 
 def calculate_goodness():
-    (x_train, y_train), (x_val, y_val) = dih.load_train_project(split_train_val=True)
+    (x_train, y_train), (x_val, y_val) = dih.load_train_project_splitted()
 
     unique_features = len(x_train)
     print(f"Unique features: {unique_features}")
@@ -127,7 +127,7 @@ def compare_models_one_to_four():
 
 
 def apply_mvg_on_selected_features():
-    (x_train, y_train), (x_val, y_val) = dih.load_train_project(split_train_val=True)
+    (x_train, y_train), (x_val, y_val) = dih.load_train_project_splitted()
 
     features_pairs = [[0, 1], [2, 3]]
     models = [MVG(), TCG()]
@@ -155,7 +155,7 @@ def apply_mvg_on_selected_features():
 
 
 def apply_pca_preprocessing():
-    (x_train, y_train), (x_val, y_val) = dih.load_train_project(split_train_val=True)
+    (x_train, y_train), (x_val, y_val) = dih.load_train_project_splitted()
     error_rates = {}
     for i in range(2, 6):
         pca = PCA(m=i)

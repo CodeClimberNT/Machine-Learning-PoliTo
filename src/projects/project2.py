@@ -1,5 +1,13 @@
-from src.helpers import DatasetImporterHelper as ds, Visualizer as vis, DataHandler as dh
-from src.models import LinearDiscriminantAnalysis as LDA, PrincipalComponentAnalysis as PCA
+import numpy as np
+from src.helpers import (
+    DatasetImporterHelper as ds,
+    Visualizer as vis,
+    DataHandler as dh,
+)
+from src.models import (
+    LinearDiscriminantAnalysis as LDA,
+    PrincipalComponentAnalysis as PCA,
+)
 
 
 def analyze_pca_features():
@@ -65,7 +73,7 @@ def classify():
 
     lda.validate(x_val, y_val=y_val, show_results=True)
 
-    lda.optimize_threshold(steps=10)
+    lda.optimize_threshold(steps=np.int64(10))
     lda.validate(x_val, y_val=y_val, show_results=True)
 
 
