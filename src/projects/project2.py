@@ -1,9 +1,12 @@
 import numpy as np
+
+
 from src.helpers import (
     DatasetImporterHelper as ds,
     Visualizer as vis,
     DataHandler as dh,
 )
+
 from src.models import (
     LinearDiscriminantAnalysis as LDA,
     PrincipalComponentAnalysis as PCA,
@@ -11,14 +14,14 @@ from src.models import (
 
 
 def analyze_pca_features():
-    D, L = ds.load_train_project()
+    x, y = ds.load_train_project()
 
     pca = PCA(m=1)
+    pca.fit(x, y)
 
-    pca.fit(D, L)
     six_main_components = [pca.take_n_components(i) for i in range(6)]
     six_main_projection = [
-        pca.predict_custom_dir(U=component, D=D) for component in six_main_components
+        pca.predict_custom_dir(U=component, D=x) for component in six_main_components
     ]
     print(six_main_components[0].shape)
     print(six_main_projection[0].shape)
@@ -28,7 +31,7 @@ def analyze_pca_features():
     for i, data in enumerate(six_main_projection):
         vis.plot_hist(
             data,
-            L,
+            y,
             labels_name=labels_name,
             title=f"PCA Feature {i + 1}",
             x_label="Label Distribution",
@@ -38,15 +41,15 @@ def analyze_pca_features():
 
 
 def analyze_lda_features():
-    D, L = ds.load_train_project()
+    x, y = ds.load_train_project()
 
     lda = LDA(m=1)
-
-    lda.fit(D, L)
+    lda.fit(x, y)
     six_main_components = [lda.take_n_components(i) for i in range(6)]
     six_main_projection = [
-        lda.predict_custom_dir(U=component, x=D) for component in six_main_components
+        lda.predict_custom_dir(U=component, x=x) for component in six_main_components
     ]
+
     print(six_main_components[0].shape)
     print(six_main_projection[0].shape)
     print(six_main_projection[0])
@@ -55,7 +58,7 @@ def analyze_lda_features():
     for i, data in enumerate(six_main_projection):
         vis.plot_hist(
             data,
-            L,
+            y,
             labels_name=labels_name,
             title=f"LDA Feature {i + 1}",
             x_label="Label Distribution",
@@ -65,8 +68,9 @@ def analyze_lda_features():
 
 
 def classify():
-    D, L = ds.load_train_project()
-    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(D, L, seed=0)
+    x, y = ds.load_train_project()
+
+    (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(x, y, seed=0)
 
     lda = LDA(m=1)
     lda.fit(x_train, y_train)
@@ -79,6 +83,7 @@ def classify():
 
 def classify_pca_preprocess():
     D, L = ds.load_train_project()
+
     (x_train, y_train), (x_val, y_val) = dh.split_db_2to1(D, L, seed=0)
 
     best_config = {"pca_m": 0, "lda_m": 0, "error_rate": 1.0}

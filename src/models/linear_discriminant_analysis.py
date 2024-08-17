@@ -1,21 +1,21 @@
-from typing import Tuple
-
 import numpy as np
-import scipy.linalg
+import scipy.linalg  # type: ignore
 
 from src.helpers import MathHelper as mh
 
 
 class LinearDiscriminantAnalysis:
-    def __init__(self, solver: str = "svd", m: int = 2):
-        self.num_classes = None
-        self.labels = None
-        self.mu = None
-        self.y = None
-        self.m = None
-        self.x = None
-        self.solver = None
-        self.threshold = None
+    def __init__(self, solver: str = "svd", m: int = 2) -> None:
+        self.num_classes: int
+        self.labels: list
+        self.mu: np.ndarray
+        self.y: np.ndarray
+        self.m: int
+        self.x: np.ndarray
+        self.W: np.ndarray
+        self.U: np.ndarray
+        self.solver: str
+        self.threshold: float
         self.set_solver(solver)
         self.set_dimensions(m)
         self.last_predicted = None
@@ -36,9 +36,9 @@ class LinearDiscriminantAnalysis:
         self.m = m
 
     def set_train_data(
-            self,
-            x: np.ndarray,
-            y: np.ndarray,
+        self,
+        x: np.ndarray,
+        y: np.ndarray,
     ) -> None:
         self.x = x
         self.y = y
@@ -46,7 +46,7 @@ class LinearDiscriminantAnalysis:
         self.labels = list(np.unique(y))
         self.num_classes = len(np.unique(y))
 
-    def fit(self, x, y) -> 'LinearDiscriminantAnalysis':
+    def fit(self, x, y) -> "LinearDiscriminantAnalysis":
         self.set_train_data(x, y)
         self.solve()
         self.get_projected_matrix()
@@ -54,7 +54,7 @@ class LinearDiscriminantAnalysis:
         return self
 
     def _compute_SB(self) -> np.ndarray:
-        Sb = 0
+        Sb: np.ndarray = np.zeros((self.x.shape[0], self.x.shape[0]))
         for c in np.unique(self.y):
             Dc = self.x[:, self.y == c]
             mu_c = mh.v_col(np.mean(Dc, axis=1))
@@ -62,7 +62,7 @@ class LinearDiscriminantAnalysis:
         return Sb
 
     def _compute_SW(self) -> np.ndarray:
-        Sw = 0
+        Sw: np.ndarray = np.zeros((self.x.shape[0], self.x.shape[0]))
 
         for c in np.unique(self.y):
             Dc = self.x[:, self.y == c]
@@ -78,33 +78,33 @@ class LinearDiscriminantAnalysis:
         else:
             raise ValueError("Invalid solver")
 
-    def solve_svd(self):
+    def solve_svd(self) -> np.ndarray:
         Sw: np.ndarray = self._compute_SW()
         U1, s, _ = np.linalg.svd(Sw)
-        P1: np.ndarray = np.dot(U1 * mh.v_row(1.0 / (s ** 0.5)), U1.T)
+        P1: np.ndarray = np.dot(U1 * mh.v_row(1.0 / (s**0.5)), U1.T)
 
         Sb: np.ndarray = self._compute_SB()
         Sbt: np.ndarray = np.dot(P1, np.dot(Sb, P1.T))
         self.U, _, _ = np.linalg.svd(Sbt)
-        P2: np.ndarray = self.U[:, 0: self.m]
-        self.W: np.ndarray = np.dot(P2.T, P1).T
+        P2: np.ndarray = self.U[:, 0 : self.m]
+        self.W = np.dot(P2.T, P1).T
         return self.W
 
     def solve_eigh(self) -> np.ndarray:
         Sb: np.ndarray = self._compute_SB()
         Sw: np.ndarray = self._compute_SW()
         _, self.U = scipy.linalg.eigh(Sb, Sw)
-        self.W: np.ndarray = self.U[:, 0: self.m]
+        self.W = self.U[:, 0 : self.m]
         return self.W
 
-    def get_projected_matrix(self):
+    def get_projected_matrix(self) -> np.ndarray:
         if hasattr(self, "W") is False:
             raise ValueError("W is not set. Run fit method first")
 
         self.projected_matrix: np.ndarray = self.W.T @ self.x
         if (
-                self.projected_matrix[0, self.y == self.labels[0]].mean()
-                > self.projected_matrix[0, self.y == self.labels[1]].mean()
+            self.projected_matrix[0, self.y == self.labels[0]].mean()
+            > self.projected_matrix[0, self.y == self.labels[1]].mean()
         ):
             self.W = -self.W
             self.projected_matrix = self.W.T @ self.x
@@ -115,10 +115,10 @@ class LinearDiscriminantAnalysis:
         if hasattr(self, "projected_matrix") is False or self.projected_matrix is None:
             raise ValueError("Projected matrix is not set. Run fit method first")
 
-        self.threshold: float = (
-                                        self.projected_matrix[0, self.y == self.labels[0]].mean()
-                                        + self.projected_matrix[0, self.y == self.labels[1]].mean()
-                                ) / 2.0
+        self.threshold = (
+            self.projected_matrix[0, self.y == self.labels[0]].mean()
+            + self.projected_matrix[0, self.y == self.labels[1]].mean()
+        ) / 2.0
 
         return self.threshold
 
@@ -127,7 +127,7 @@ class LinearDiscriminantAnalysis:
         return self.threshold
 
     def optimize_threshold(
-            self, *, steps: np.int64, show_threshold: bool = True
+        self, *, steps: np.int64, show_threshold: bool = True
     ) -> float:
         if hasattr(self, "projected_matrix") is False or self.projected_matrix is None:
             raise ValueError("Projected matrix is not set. Run fit method first")
@@ -138,7 +138,7 @@ class LinearDiscriminantAnalysis:
         _, best_error_rate = self.validate(self.x, self.y)
 
         for threshold in np.linspace(
-                self.projected_matrix.min(), self.projected_matrix.max(), steps
+            self.projected_matrix.min(), self.projected_matrix.max(), steps
         ):
             predicted = np.zeros(shape=self.projected_matrix.shape, dtype=np.int32)
             predicted[self.projected_matrix >= threshold] = self.labels[1]
@@ -158,16 +158,17 @@ class LinearDiscriminantAnalysis:
         return self.threshold
 
     def validate(
-            self,
-            x_val: np.ndarray,
-            y_val: np.ndarray,
-            *,
-            threshold: float = None,
-            show_results: bool = False,
+        self,
+        x_val: np.ndarray,
+        y_val: np.ndarray,
+        *,
+        threshold: float | None = None,
+        show_results: bool = False,
     ) -> tuple[np.ndarray, float]:
-
         if threshold:
-            return self.validate_custom_threshold(x_val, y_val, threshold=threshold, show_results=show_results)
+            return self.validate_custom_threshold(
+                x_val, y_val, threshold=threshold, show_results=show_results
+            )
 
         if hasattr(self, "W") is False:
             raise ValueError("W is not set. Run fit method first")
@@ -184,12 +185,12 @@ class LinearDiscriminantAnalysis:
         return predicted, error_rate
 
     def validate_custom_threshold(
-            self,
-            x_val: np.ndarray,
-            y_val: np.ndarray,
-            *,
-            threshold: float = None,
-            show_results: bool = False,
+        self,
+        x_val: np.ndarray,
+        y_val: np.ndarray,
+        *,
+        threshold: float | None = None,
+        show_results: bool = False,
     ) -> tuple[np.ndarray, float]:
         if hasattr(self, "W") is False:
             raise ValueError("W is not set. Run fit method first")
@@ -221,23 +222,23 @@ class LinearDiscriminantAnalysis:
         return self.W.T @ x
 
     def show_error_rate(
-            self, predicted: np.ndarray, labels: np.ndarray, error_rate: float
+        self, predicted: np.ndarray, labels: np.ndarray, error_rate: float
     ) -> None:
         print(
             f"Error rate: {(predicted != labels).sum()}/{(labels.size)} => {(error_rate * 100):.1f}%"
         )
 
     def get_error_rate(
-            self,
-            predicted: np.ndarray,
-            labels: np.ndarray,
-            *,
-            show_values: bool = False,
+        self,
+        predicted: np.ndarray,
+        labels: np.ndarray,
+        *,
+        show_values: bool = False,
     ) -> float:
         error_rate: float = (predicted != labels).sum() / float(labels.size)
 
         if show_values:
-            show_values(predicted, labels, error_rate)
+            self.show_error_rate(predicted, labels, error_rate)
 
         return error_rate
 
@@ -245,7 +246,7 @@ class LinearDiscriminantAnalysis:
         return self.U[:, n]
 
     def predict_custom_dir(
-            self, *, U: np.ndarray = None, x: np.ndarray = None
+        self, *, U: np.ndarray | None = None, x: np.ndarray | None = None
     ) -> np.ndarray:
         if U is None or x is None:
             raise ValueError("Direction or Data not set")

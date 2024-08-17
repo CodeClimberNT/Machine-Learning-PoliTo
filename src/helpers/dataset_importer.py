@@ -1,35 +1,45 @@
 import os
-from typing import Optional
+from typing import Any, Optional
 import numpy as np
+import sklearn.datasets as datasets  # type: ignore
+
+from .package_directory import config as cfg
 
 
 class DatasetImporterHelper:
     @staticmethod
-    def load_iris():
-        import sklearn.datasets as datasets
-
+    def load_iris() -> tuple[Any, Any]:
         iris_dataset = datasets.load_iris()
-        x, y = iris_dataset["data"].T, iris_dataset["target"]
+        x, y = iris_dataset.data.T, iris_dataset.target
 
         return x, y
 
     @staticmethod
-    def load_train_project(split_train_val: bool = False):
-        current_file_path: str = os.path.abspath(__file__)
-        project_root: str = os.path.dirname(
-            os.path.dirname(os.path.dirname(current_file_path))
-        )
-        train_data_path: str = os.path.join(
-            project_root, "datasets", "project", "trainData.txt"
-        )
+    def __get_train_data_path() -> str:
+        return os.path.join(cfg.PROJECT_DIR_PATH, "trainData.txt")
+
+    @staticmethod
+    def load_train_project() -> tuple[np.ndarray, np.ndarray]:
+        train_data_path: str = DatasetImporterHelper.__get_train_data_path()
 
         if DatasetImporterHelper.file_exists(train_data_path):
             x, y = DatasetImporterHelper.load_txt(train_data_path, features_type=float)
-            if split_train_val:
-                from src.helpers import DataHandler as dh
-
-                return dh.split_db_2to1(x, y)
             return x, y
+        else:
+            raise FileNotFoundError(f"File not found: {train_data_path}")
+
+    @staticmethod
+    def load_train_project_splitted() -> (
+        tuple[tuple[np.ndarray, np.ndarray], tuple[np.ndarray, np.ndarray]]
+    ):
+        train_data_path: str = DatasetImporterHelper.__get_train_data_path()
+
+        if DatasetImporterHelper.file_exists(train_data_path):
+            x, y = DatasetImporterHelper.load_txt(train_data_path, features_type=float)
+            from src.helpers import DataHandler as dh
+
+            return dh.split_db_2to1(x, y)
+
         else:
             raise FileNotFoundError(f"File not found: {train_data_path}")
 
@@ -82,20 +92,9 @@ class DatasetImporterHelper:
     def load_div_commedia(
         split_data: bool = False, n=0
     ) -> tuple[list[str], list[str], list[str]]:
-
-        current_file_path: str = os.path.abspath(__file__)
-        project_root: str = os.path.dirname(
-            os.path.dirname(os.path.dirname(current_file_path))
-        )
-        inferno_path: str = os.path.join(
-            project_root, "datasets", "generative", "div_comm", "inferno.txt"
-        )
-        purgatorio_path: str = os.path.join(
-            project_root, "datasets", "generative", "div_comm", "purgatorio.txt"
-        )
-        paradiso_path: str = os.path.join(
-            project_root, "datasets", "generative", "div_comm", "paradiso.txt"
-        )
+        inferno_path: str = os.path.join(cfg.DIV_COMM_DIR_PATH, "inferno.txt")
+        purgatorio_path: str = os.path.join(cfg.DIV_COMM_DIR_PATH, "purgatorio.txt")
+        paradiso_path: str = os.path.join(cfg.DIV_COMM_DIR_PATH, "paradiso.txt")
         l_inf = []
         l_pur = []
         l_par = []

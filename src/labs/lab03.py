@@ -1,9 +1,12 @@
 import numpy as np
+
+
 from src.helpers import DatasetImporterHelper as ds
 from src.helpers import Visualizer as vis
 from src.helpers import DataHandler as dp
 
 from src.models import LinearDiscriminantAnalysis
+
 from src.models import PrincipalComponentAnalysis
 
 
@@ -17,11 +20,11 @@ def classification_no_preprocess() -> None:
 
     L = LIris[LIris != 0]
 
-    (DTrain, LTrain), (DVal, LVal) = dp.split_db_2to1(D, L)
+    (x_train, y_train), (DVal, LVal) = dp.split_db_2to1(D, L)
 
     lda = LinearDiscriminantAnalysis(solver="svd", m=1)
-    lda.set_train_data(DTrain, LTrain)
-    lda.fit()
+
+    lda.fit(x_train, y_train)
 
     PVal = lda.validate(DVal, y_val=LVal, show_results=True)
 
@@ -39,12 +42,17 @@ def classification() -> None:
     x_iris, y_iris = ds.load_iris()
 
     D = x_iris[:, y_iris != 0]
+
     L = y_iris[y_iris != 0]
+
     # Train: training
+
     # Val: validation
+
     (x_train, y_train), (x_val, y_val) = dp.split_db_2to1(D, L)
 
     pca = PrincipalComponentAnalysis(m=2)
+
     pca.fit(x_train, y_train)
 
     x_val_pca = pca.predict(x_val)
@@ -52,11 +60,13 @@ def classification() -> None:
     x_train_pca = pca.get_projected_matrix()
 
     lda = LinearDiscriminantAnalysis(solver="svd", m=1)
+
     lda.fit(x_train_pca, y_train)
 
     PVal = lda.validate(x_val_pca, y_val=y_val, show_results=True)
 
     pca_matrix = np.vstack((x_train_pca, y_train))
+
     vis.plot_scatter_matrix(
         pca_matrix,
         y_train,
@@ -99,11 +109,16 @@ def classification() -> None:
 
 def test_lda():
     D, L = ds.load_iris()
+
     lda = LinearDiscriminantAnalysis(solver="svd", m=2)
+
     lda.set_train_data(D, L)
+
     lda.fit()
+
     y = lda.get_projected_matrix()
     print(y)
+
     vis.plot_scatter_matrix(
         y,
         L,
@@ -116,8 +131,11 @@ def test_lda():
     )
 
     lda.set_dimensions(1)
+
     lda.fit()
+
     y = lda.get_projected_matrix()
+
     vis.plot_hist(
         y,
         L,
@@ -131,9 +149,13 @@ def test_lda():
 
 def test_pca():
     D, L = ds.load_iris()
+
     pca = PrincipalComponentAnalysis(m=2)
+
     pca.set_train_data(D, L)
+
     pca.fit()
+
     y = pca.get_projected_matrix()
 
     vis.plot_scatter_matrix(
@@ -148,11 +170,16 @@ def test_pca():
     )
 
     pca.set_dimensions(1)
+
     pca.fit()
+
     y = pca.get_projected_matrix()
     print(y)
+
     # apply label to the last column
+
     y = np.vstack((y, L))
+
     vis.plot_hist(
         y,
         L,
@@ -166,7 +193,9 @@ def test_pca():
 
 def main() -> None:
     # test_lda()
+
     # test_pca()
+
     # classification_no_preprocess()
 
     classification()
